@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog as fd
-from funcoes import * 
+from commands import * 
 
 
 root = tk.Tk()
