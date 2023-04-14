@@ -1,8 +1,10 @@
 SET TERM ^ ;
 
 create or alter procedure CADASTRAR_REQUISICAO_ITENS (
-    DESCRICAO       VARCHAR(60),
-    ID_ITEM         INTEGER NOT NULL)
+    ID_CLIENTE          INTEGER,
+    ID_ITEM         INTEGER NOT NULL,
+    ENTREGAR        FLOAT
+    )
 as
 declare variable CD_REQ integer;
 BEGIN
