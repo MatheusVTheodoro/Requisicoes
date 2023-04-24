@@ -42,6 +42,6 @@ def read_mbx():
         linhaDoPedido = arquivo[tam:tam+5]
 
         
-    
+    print(f"execute procedure GERAR_REQUISICAO ('{codCliente}','{nPedido}','{NPedidoGMSAP}')")
     print(f"peca: {peca}\ncodCliente: {codCliente}\nnPedido: {nPedido}\nquantidade: {quantidade}\ndataArquivo: {dataArquivo}\ncodFornecedor: {codFornecedor}\ntipoDSODSC: {tipoDSODSC}\nNPedidoGMSAP: {NPedidoGMSAP}\nhora: {hora}\nlinhaDoPedido: {linhaDoPedido}")
       

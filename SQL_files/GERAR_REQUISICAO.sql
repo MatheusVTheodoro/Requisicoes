@@ -3,7 +3,7 @@ SET TERM ^ ;
 CREATE OR ALTER PROCEDURE GERAR_REQUISICAO (
     CODCLIENTE         VARCHAR(8),
     PEDIDO             VARCHAR(18),
-    NPEDIDOGMSAP       BLOB SUB_TYPE 1 SEGMENT SIZE 80)
+    NPEDIDOGMSAP       VARCHAR(20))
 AS
 DECLARE VARIABLE CD_REQ INTEGER;
 DECLARE VARIABLE DATA_HOJE DATE;
@@ -40,12 +40,12 @@ BEGIN
     ) VALUES (
         :CD_REQ,
         NULL,
-        :CODCLIENTE,
+        NULL,
         :DATA_HOJE,
         :HORA_HOJE,
         NULL,
         NULL,
-        :PEDIDO,
+        NULL,
         NULL,
         NULL,
         NULL,
