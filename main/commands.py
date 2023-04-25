@@ -19,10 +19,10 @@ def opcoes():
         MessageId.append(re.sub("&nbsp;","",message))
     return MessageId
     
-   #print(f"execute procedure GERAR_REQUISICAO ('{codCliente}','{nPedido}','{NPedidoGMSAP}')")
-   #print(f"peca: {peca}\ncodCliente: {codCliente}\nnPedido: {nPedido}\nquantidade: {quantidade}\ndataArquivo: {datavalue}\ncodFornecedor: {codFornecedor}\ntipoDSODSC: {tipoDSODSC}\nNPedidoGMSAP: {NPedidoGMSAP}\nhora: {hora}\nlinhaDoPedido: {linhaDoPedido}")
-
 def trataPedescoTxt(link):
+        infoMost=[]
+        procedure=[]
+        PedescoFULL=[]
         texto = htmlResponseText(link)
         texto = re.findall("98.............................................................",texto)
         for value in texto:
@@ -45,6 +45,7 @@ def trataPedescoTxt(link):
             hora = value[tam:tam+6]
             tam=tam+6
             linhaDoPedido = value[tam:tam+5]
-            print(f"execute procedure GERAR_REQUISICAO ('{codCliente}','{nPedido}','{NPedidoGMSAP}')")
-            print(f"peca: {peca}\ncodCliente: {codCliente}\nnPedido: {nPedido}\nquantidade: {quantidade}\ndataArquivo: {datavalue}\ncodFornecedor: {codFornecedor}\ntipoDSODSC: {tipoDSODSC}\nNPedidoGMSAP: {NPedidoGMSAP}\nhora: {hora}\nlinhaDoPedido: {linhaDoPedido}")
-
+            procedure.append(f"execute procedure GERAR_REQUISICAO ('{codCliente}','{nPedido}','{NPedidoGMSAP}')")
+            infoMost.append(f"peca: {peca}\ncodCliente: {codCliente}\nnPedido: {nPedido}\nquantidade: {quantidade}\ndataArquivo: {datavalue}\ncodFornecedor: {codFornecedor}\ntipoDSODSC: {tipoDSODSC}\nNPedidoGMSAP: {NPedidoGMSAP}\nhora: {hora}\nlinhaDoPedido: {linhaDoPedido}")
+        PedescoFULL = infoMost+procedure 
+        return PedescoFULL
