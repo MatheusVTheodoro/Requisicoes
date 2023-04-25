@@ -18,7 +18,33 @@ def opcoes():
         message = re.sub("<td><tt>&nbsp;","",v)
         MessageId.append(re.sub("&nbsp;","",message))
     return MessageId
-
+    
    #print(f"execute procedure GERAR_REQUISICAO ('{codCliente}','{nPedido}','{NPedidoGMSAP}')")
    #print(f"peca: {peca}\ncodCliente: {codCliente}\nnPedido: {nPedido}\nquantidade: {quantidade}\ndataArquivo: {datavalue}\ncodFornecedor: {codFornecedor}\ntipoDSODSC: {tipoDSODSC}\nNPedidoGMSAP: {NPedidoGMSAP}\nhora: {hora}\nlinhaDoPedido: {linhaDoPedido}")
-      
+
+def trataPedescoTxt(link):
+        texto = htmlResponseText(link)
+        texto = re.findall("98.............................................................",texto)
+        for value in texto:
+            tam = 8
+            peca = value[0:0+tam]
+            codCliente = value[tam:tam+6]
+            tam=tam+6
+            nPedido = value[tam:tam+6]
+            tam=tam+6
+            quantidade = value[tam:tam+5]
+            tam=tam+5
+            datavalue = value[tam:tam+8]
+            tam=tam+8
+            codFornecedor = value[tam:tam+9]
+            tam=tam+9
+            tipoDSODSC = value[tam:tam+1]
+            tam = tam+1
+            NPedidoGMSAP = value[tam:tam+9]
+            tam=tam+9
+            hora = value[tam:tam+6]
+            tam=tam+6
+            linhaDoPedido = value[tam:tam+5]
+            print(f"execute procedure GERAR_REQUISICAO ('{codCliente}','{nPedido}','{NPedidoGMSAP}')")
+            print(f"peca: {peca}\ncodCliente: {codCliente}\nnPedido: {nPedido}\nquantidade: {quantidade}\ndataArquivo: {datavalue}\ncodFornecedor: {codFornecedor}\ntipoDSODSC: {tipoDSODSC}\nNPedidoGMSAP: {NPedidoGMSAP}\nhora: {hora}\nlinhaDoPedido: {linhaDoPedido}")
+
