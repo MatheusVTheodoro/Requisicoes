@@ -4,8 +4,12 @@ from tkinter import filedialog as fd
 from commands import * 
 
 root = tk.Tk()
+root.state('zoomed')
+root.geometry('800x800')
 options = opcoes()
 listbox = tk.Listbox(root)
+
+#root.resizable(False, False)
 for option in options:
     listbox.insert(tk.END, option)
 listbox.pack(side=tk.LEFT, fill=tk.BOTH)
