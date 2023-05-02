@@ -13,16 +13,31 @@ def htmlResponseText(link):
 def opcoes():
     html=htmlResponseText("https://messaging.covisint.com/invoke/HTTPConnector.Mailbox/get")
     MessageId=[]
+    Data=[]
+    Hora=[]
+    
     X = re.findall("<td><tt>&nbsp;........&nbsp;",html)
     for v in X:
         message = re.sub("<td><tt>&nbsp;","",v)
         MessageId.append(re.sub("&nbsp;","",message))
-    return MessageId
+    
+    X = re.findall("<nobr>&nbsp;........",html)
+    for v in X:
+        dia = re.sub("<nobr>&nbsp;","",v)
+        Data.append(dia)
+    
+    X = re.findall("&nbsp;.....:..",html)
+    for v in X:
+        hora = re.sub("&nbsp;","",v)
+        Hora.append(hora)
+
+    return {'MessageID':MessageId,'Data':Data,'Hora':Hora}
+    
     
 def trataPedescoTxt(link):
         infoMost=[]
         procedure=[]
-        PedescoFULL=[]
+        
         texto = htmlResponseText(link)
         texto = re.findall("98.............................................................",texto)
         for value in texto:
@@ -46,6 +61,10 @@ def trataPedescoTxt(link):
             tam=tam+6
             linhaDoPedido = value[tam:tam+5]
             procedure.append(f"execute procedure GERAR_REQUISICAO ('{codCliente}','{nPedido}','{NPedidoGMSAP}')")
-            infoMost.append(f"peca: {peca}\ncodCliente: {codCliente}\nnPedido: {nPedido}\nquantidade: {quantidade}\ndataArquivo: {datavalue}\ncodFornecedor: {codFornecedor}\ntipoDSODSC: {tipoDSODSC}\nNPedidoGMSAP: {NPedidoGMSAP}\nhora: {hora}\nlinhaDoPedido: {linhaDoPedido}")
-        PedescoFULL = infoMost+procedure 
-        return PedescoFULL
+            infoMost.append(f"peca: {peca} codCliente: {codCliente} nPedido: {nPedido} quantidade: {quantidade} dataArquivo: {datavalue} codFornecedor: {codFornecedor} tipoDSODSC: {tipoDSODSC} NPedidoGMSAP: {NPedidoGMSAP} hora: {hora} linhaDoPedido: {linhaDoPedido}\n")
+        
+        return infoMost
+
+
+
+

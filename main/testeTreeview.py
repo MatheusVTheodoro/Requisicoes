@@ -1,38 +1,42 @@
 import tkinter as tk
 from tkinter import ttk
 
-# Cria uma janela
+# Cria a janela principal do tkinter
 root = tk.Tk()
+root.title("TreeView Exemplo")
 
-# Define o tamanho da janela
-root.geometry("500x500")
+# Cria a Treeview
+treeview = ttk.Treeview(root)
+treeview.pack(side="left", fill="both", expand=True)
 
-# Cria uma Treeview
-tree = ttk.Treeview(root)
+# Adiciona algumas colunas
+treeview["columns"] = ("nome", "idade")
+treeview.column("#0", width=100, minwidth=100, stretch=tk.NO)
+treeview.column("nome", width=100, minwidth=100, stretch=tk.NO)
+treeview.column("idade", width=100, minwidth=100, stretch=tk.NO)
 
-# Define as colunas da Treeview
-tree["columns"] = ("Nome", "Idade")
+# Define os cabeçalhos das colunas
+treeview.heading("#0", text="ID", anchor=tk.W)
+treeview.heading("nome", text="Nome", anchor=tk.W)
+treeview.heading("idade", text="Idade", anchor=tk.W)
 
-# Define o nome das colunas
-tree.heading("#0", text="ID")
-tree.heading("Nome", text="Nome")
-tree.heading("Idade", text="Idade")
+# Adiciona alguns itens à Treeview
+treeview.insert("", "end", text="001", values=("João", "30"))
+treeview.insert("", "end", text="002", values=("Maria", "25"))
+treeview.insert("", "end", text="003", values=("Pedro", "40"))
 
-# Adiciona alguns dados
-for i in range(10):
-    tree.insert("", tk.END,values=(str(i),"Pessoa " + str(i), str(i*10)))
+# Cria um Label para exibir o valor selecionado
+label = tk.Label(root, text="")
+label.pack()
 
-# Cria um scrollbar vertical
-scrollbar = ttk.Scrollbar(root, orient="vertical", command=tree.yview)
+# Define a função de clique da Treeview
+def item_clicked(event):
+    item = treeview.selection()[0]
+    value = treeview.item(item, "values")[0]
+    label.config(text=value)
 
-# Define o scrollbar na Treeview
-tree.configure(yscrollcommand=scrollbar.set)
+# Associa a função de clique à Treeview
+treeview.bind("<ButtonRelease-1>", item_clicked)
 
-# Posiciona a Treeview no centro da tela
-tree.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
-
-# Posiciona o scrollbar ao lado direito da Treeview
-scrollbar.place(relx=0.99, rely=0.5, anchor=tk.E)
-
-# Inicia a janela
+# Inicia o loop principal do tkinter
 root.mainloop()

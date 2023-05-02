@@ -45,44 +45,8 @@ def confirmaPedido():
 btConfirm = tk.Button(app, text="Executar comando", command=confirmaPedido)
 btConfirm.grid(row=4, column=0, sticky='nsew')
 
-def Abre():
-    global bt_move
-    if bt_move is False:
-        for x in range(-300,0):
-            nav_lateral.place(x=x,y=0)
-            top_frame.update()
-        bt_move = True
-def Fecha():
-    global bt_move
-    if bt_move is True:
-        for x in range(0,300):
-            nav_lateral.place(x=-x,y=0)
-            #top_frame.update()  
-        bt_move = False
-
-
 top_frame = tk.Frame(app, bg=cor['azul'])
 top_frame.grid(row=0, column=0, sticky='nsew')
-
-top_frame_navbar = tk.Label(top_frame,text="Requisições",font="ExtraCondensed 15",
-                           bg=cor["azulClaro"],fg="white",height=2,padx=20)
-top_frame_navbar.grid(row=0, column=0, sticky='nsew')
-
-
-
-
-
-bt_abre = tk.Button(top_frame,text="---\n---",fg=cor["branco"],bg=cor["azul"],padx=20,bd=0,
-                       activebackground=cor["azul"],command=Abre)
-bt_abre.place(x=10,y=10)
-
-
-
-
-nav_lateral= tk.Frame(app,bg=cor["azulClaro"],height=3000)
-nav_lateral.place(x= -300,y=0)
-
-tk.Label(nav_lateral,font="ExtraCondensed 15",bg=cor["azul"],fg="black",height=2,padx=20).place(x=0,y=0)
 
 y=80
 
