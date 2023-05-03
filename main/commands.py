@@ -40,6 +40,7 @@ def trataPedescoTxt(link):
     nPedidoLT=[]
     quantidadeLT=[]
     codFornecedorLT=[]
+    procedureLT=[]
     texto = htmlResponseText(link)
     texto = re.findall("98.............................................................",texto)
     for value in texto:
@@ -62,13 +63,15 @@ def trataPedescoTxt(link):
         hora = value[tam:tam+6]
         tam=tam+6
         linhaDoPedido = value[tam:tam+5]
+        procrdure=(f"execute procedure('{codCliente}','{nPedido}','{NPedidoGMSAP}','{peca}',{quantidade})")
+        procedureLT.append(procrdure)
         pecaLT.append(peca)
         codClienteLT.append(codCliente)
         nPedidoLT.append(nPedido)
         quantidadeLT.append(quantidade)
         codFornecedorLT.append(codFornecedor)
         
-    return {'peca':pecaLT,'codCliente':codClienteLT,'nPedido':nPedidoLT,'quantidade':quantidadeLT,'codFornecedor':codFornecedorLT}
+    return {'procedure':procedureLT,'peca':pecaLT,'codCliente':codClienteLT,'nPedido':nPedidoLT,'quantidade':quantidadeLT,'codFornecedor':codFornecedorLT}
 
 
 
