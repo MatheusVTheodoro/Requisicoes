@@ -3,6 +3,8 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 import requests as req
 import re
+from PIL import ImageTk, Image
+
 
 def htmlResponseText(link):
     user='CampFacil'

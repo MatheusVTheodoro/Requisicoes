@@ -2,15 +2,45 @@ import tkinter as tk
 from tkinter import ttk
 #import ttkbootstrap as ttk
 from commands import *
+from PIL import Image, ImageTk
+from tkinter import PhotoImage
+
 options=opcoes()
 cor = {"azul" : "#1D3557","azulClaro" : "#457B9D","branco" : "#F1FAEE","vermelho" : "#E63946", "cinza" : "#8D99AE"}
+
+
+
+
+
 root = tk.Tk()
 root.geometry("800x600")
 root.config(bg=cor["branco"])
 root.state('zoomed')
+root.title("Requisições")
+root.iconbitmap(default='')
+img_coliseu =PhotoImage(file="C:/REPOSITORIOS/COLISEU/ColiseuRequisicoes/main/assets/COLISEUsFundo.png")
+img_coliseu = img_coliseu.subsample(2, 2)
+
+
 
 frameTop = tk.Frame(root,height=100,bg=cor["azul"],padx=10)
 frameTop.pack(side="top", fill="x")
+labelLogo = ttk.Label(frameTop, image=img_coliseu,background=cor["azul"])
+labelLogo.grid(row=0,column=2)
+
+lb_req = ttk.Label(frameTop, text="Requisições",background=cor["azul"],foreground=cor["branco"]
+                   ,font=("Arial", 24,"bold"))
+lb_req.grid(row=0,column=0)
+
+
+frameTop.columnconfigure(0, weight=1)
+frameTop.columnconfigure(1, weight=4)
+frameTop.columnconfigure(2, weight=1)
+frameTop.rowconfigure(0, weight=1)
+
+
+
+
 
 frameCom2Tv = tk.Frame(root,bg=cor["vermelho"])
 frameCom2Tv.pack(fill="both", expand=True, padx=10, pady=10)
