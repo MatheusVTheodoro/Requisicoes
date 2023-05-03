@@ -35,35 +35,40 @@ def opcoes():
     
     
 def trataPedescoTxt(link):
-        infoMost=[]
-        procedure=[]
+    pecaLT=[]
+    codClienteLT=[]
+    nPedidoLT=[]
+    quantidadeLT=[]
+    codFornecedorLT=[]
+    texto = htmlResponseText(link)
+    texto = re.findall("98.............................................................",texto)
+    for value in texto:
+        tam = 8
+        peca = value[0:0+tam]
+        codCliente = value[tam:tam+6]
+        tam=tam+6
+        nPedido = value[tam:tam+6]
+        tam=tam+6
+        quantidade = value[tam:tam+5]
+        tam=tam+5
+        datavalue = value[tam:tam+8]
+        tam=tam+8
+        codFornecedor = value[tam:tam+9]
+        tam=tam+9
+        tipoDSODSC = value[tam:tam+1]
+        tam = tam+1
+        NPedidoGMSAP = value[tam:tam+9]
+        tam=tam+9
+        hora = value[tam:tam+6]
+        tam=tam+6
+        linhaDoPedido = value[tam:tam+5]
+        pecaLT.append(peca)
+        codClienteLT.append(codCliente)
+        nPedidoLT.append(nPedido)
+        quantidadeLT.append(quantidade)
+        codFornecedorLT.append(codFornecedor)
         
-        texto = htmlResponseText(link)
-        texto = re.findall("98.............................................................",texto)
-        for value in texto:
-            tam = 8
-            peca = value[0:0+tam]
-            codCliente = value[tam:tam+6]
-            tam=tam+6
-            nPedido = value[tam:tam+6]
-            tam=tam+6
-            quantidade = value[tam:tam+5]
-            tam=tam+5
-            datavalue = value[tam:tam+8]
-            tam=tam+8
-            codFornecedor = value[tam:tam+9]
-            tam=tam+9
-            tipoDSODSC = value[tam:tam+1]
-            tam = tam+1
-            NPedidoGMSAP = value[tam:tam+9]
-            tam=tam+9
-            hora = value[tam:tam+6]
-            tam=tam+6
-            linhaDoPedido = value[tam:tam+5]
-            procedure.append(f"execute procedure GERAR_REQUISICAO ('{codCliente}','{nPedido}','{NPedidoGMSAP}')")
-            infoMost.append(f"peca: {peca} codCliente: {codCliente} nPedido: {nPedido} quantidade: {quantidade} dataArquivo: {datavalue} codFornecedor: {codFornecedor} tipoDSODSC: {tipoDSODSC} NPedidoGMSAP: {NPedidoGMSAP} hora: {hora} linhaDoPedido: {linhaDoPedido}\n")
-        
-        return infoMost
+    return {'peca':pecaLT,'codCliente':codClienteLT,'nPedido':nPedidoLT,'quantidade':quantidadeLT,'codFornecedor':codFornecedorLT}
 
 
 

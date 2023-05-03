@@ -16,17 +16,20 @@ frameTv.pack(side="bottom", fill="both", expand=True, padx=10, pady=10)
 frameBot = tk.Frame(frameTv,height=300,bg=cor["cinza"],padx=10)
 frameBot.pack(side="bottom", fill="x")
 
-label = tk.Label(frameBot, text="")
-label.pack()
-
 
 treeview = ttk.Treeview(frameTv, columns=("Message Id", "Data","Hora","Status"), show='headings')
+treeviewVizu = ttk.Treeview(frameBot, columns=("peca","codCliente","nPedido","quantidade","codFornecedor"), show='headings')
 
 treeview.heading("Message Id", text="Message Id")
 treeview.heading("Data", text="Data")
 treeview.heading("Hora", text="Hora")
 treeview.heading("Status", text="Status")
 
+treeviewVizu.heading("peca", text="peca")
+treeviewVizu.heading("codCliente", text="codCliente")
+treeviewVizu.heading("nPedido", text="nPedido")
+treeviewVizu.heading("quantidade", text="quantidade")
+treeviewVizu.heading("codFornecedor", text="codFornecedor")
 
 for X in range (0,len(options['Data'])):
     treeview.insert("", tk.END,values=(options['MessageID'][X],options['Data'][X],options['Hora'][X],"Confirmado"))
@@ -34,18 +37,26 @@ for X in range (0,len(options['Data'])):
 print(type(options))
 
 def item_clicked(event):
+    treeviewVizu.delete(*treeviewVizu.get_children())
     item = treeview.selection()[0]
     value = treeview.item(item, "values")[0]
     linkView=(f"https://messaging.covisint.com/invoke/HTTPConnector.Mailbox/get?action=msg_view&id={value}")
-    label_text = trataPedescoTxt(linkView)
-    label.config(text=label_text)
+    pedidos = trataPedescoTxt(linkView)
+    for i in range (0,len(pedidos['peca'])):
+        treeviewVizu.insert("", tk.END,values=(pedidos['peca'][i],pedidos['codCliente'][i],pedidos['nPedido'][i],pedidos['quantidade'][i],pedidos['codFornecedor'][i]))
+    
+    
 
 treeview.bind("<ButtonRelease-1>", item_clicked)
 
 scrollY = ttk.Scrollbar(frameTv, orient="vertical", command=treeview.yview)
+scrollY2 = ttk.Scrollbar(frameBot, orient="vertical", command=treeviewVizu.yview)
 scrollY.pack(side="right", fill="y")
+scrollY2.pack(side="right", fill="y")
 
 treeview.configure(yscrollcommand=scrollY.set)
+treeviewVizu.configure(yscrollcommand=scrollY2.set)
 treeview.pack(fill="both", expand=True,padx=10,pady=10)
+treeviewVizu.pack(fill="both", expand=True,padx=10,pady=10)
 
 root.mainloop()
