@@ -1,9 +1,6 @@
-import tkinter as tk
-from tkinter import ttk
-from tkinter import filedialog as fd
 import requests as req
 import re
-from PIL import ImageTk, Image
+
 
 
 def htmlResponseText(link):
@@ -34,8 +31,7 @@ def opcoes():
         Hora.append(hora)
 
     return {'MessageID':MessageId,'Data':Data,'Hora':Hora}
-    
-    
+        
 def trataPedescoTxt(link):
     pecaLT=[]
     codClienteLT=[]
@@ -65,6 +61,7 @@ def trataPedescoTxt(link):
         hora = value[tam:tam+6]
         tam=tam+6
         linhaDoPedido = value[tam:tam+5]
+        quantidade=int(quantidade)
         procrdure=(f"execute procedure('{codCliente}','{nPedido}','{NPedidoGMSAP}','{peca}',{quantidade})")
         procedureLT.append(procrdure)
         pecaLT.append(peca)
