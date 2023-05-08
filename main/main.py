@@ -6,6 +6,8 @@ button_created = False
 options=opcoes()
 cor = {"azul" : "#1D3557","azulClaro" : "#457B9D","branco" : "#F1FAEE","vermelho" : "#E63946", "cinza" : "#8D99AE"}
 
+
+
 root = tk.Tk()
 root.geometry("800x600")
 root.config(bg=cor["branco"])

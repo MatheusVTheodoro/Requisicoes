@@ -1,5 +1,8 @@
 import requests as req
 import re
+import firebirdsql
+
+banco='C:\COLISEU\DATA\CAMPOFACIL.FDB'
 
 
 
@@ -33,12 +36,13 @@ def opcoes():
     return {'MessageID':MessageId,'Data':Data,'Hora':Hora}
         
 def trataPedescoTxt(link):
-    pecaLT=[]
-    codClienteLT=[]
-    nPedidoLT=[]
-    quantidadeLT=[]
-    codFornecedorLT=[]
-    procedureLT=[]
+    banco='C:\COLISEU\DATA\CAMPOFACIL.FDB'
+    clienteCol=[]
+    produtoCol=[]
+    produtoRefCol=[]
+    quantidadeCol=[]
+    codigoClienteCol=[]
+    procedures=[]
     texto = htmlResponseText(link)
     texto = re.findall("98.............................................................",texto)
     for value in texto:
@@ -72,6 +76,18 @@ def trataPedescoTxt(link):
         
     return {'procedure':procedureLT,'peca':pecaLT,'codCliente':codClienteLT,'nPedido':nPedidoLT,'quantidade':quantidadeLT,'codFornecedor':codFornecedorLT}
 
+
+
+        
+        procedure=(f"execute procedure GERAR_REQUISICAO('{codCliente}','{nPedido}','{int(NPedidoGMSAP)}','{peca}',{quantidade});")
+        procedures.append(procedure)
+        clienteCol.append(cliente)
+        codigoClienteCol.append(codCliente)
+        produtoCol.append(produto)
+        produtoRefCol.append(peca)
+        quantidadeCol.append(quantidade)
+        print(cliente)
+    return {'procedures':procedures,'clienteCol':clienteCol,'codigoClienteCol':codigoClienteCol,'produtoCol':produtoCol,'produtoRefCol':produtoRefCol,'quantidadeCol':quantidadeCol,}
 
 
 

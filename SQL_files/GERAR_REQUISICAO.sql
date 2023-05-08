@@ -60,7 +60,7 @@ BEGIN
         ENTREGUE
     ) VALUES (
         :CD_REQ,
-        2,
+        1,
         :ID_CLIENTE_REQ,
         :DATA_HOJE,
         :HORA_HOJE,
