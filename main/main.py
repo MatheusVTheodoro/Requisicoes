@@ -3,10 +3,9 @@ from tkinter import ttk
 from commands import *
 from tkinter import PhotoImage
 button_created = False
+button_created2 = False
 options=opcoes()
 cor = {"azul" : "#1D3557","azulClaro" : "#457B9D","branco" : "#F1FAEE","vermelho" : "#E63946", "cinza" : "#8D99AE"}
-
-
 
 root = tk.Tk()
 root.geometry("800x600")
@@ -59,25 +58,43 @@ for X in range (0,len(options['Data'])):
     treeview.insert("", tk.END,values=(options['MessageID'][X],options['Data'][X],options['Hora'][X],"Confirmado"))
 
 
-treeviewVizu = ttk.Treeview(frameTvBot, columns=("peca","codCliente","nPedido","quantidade","codFornecedor"), show='headings')
-treeviewVizu.heading("peca", text="peca")
-treeviewVizu.heading("codCliente", text="codCliente")
-treeviewVizu.heading("nPedido", text="nPedido")
-treeviewVizu.heading("quantidade", text="quantidade")
-treeviewVizu.heading("codFornecedor", text="codFornecedor")
+treeviewVizu = ttk.Treeview(frameTvBot, columns=("codCliente","cliente","produto","referencia","quantidade"), show='headings')
+
+treeviewVizu.heading("codCliente", text="Cód.Cliente")
+treeviewVizu.heading("cliente", text="Cliente")
+treeviewVizu.heading("produto", text="Produto")
+treeviewVizu.heading("referencia", text="Ref.")
+treeviewVizu.heading("quantidade", text="Uni.")
+
+btEnvia = tk.Button(frameTvTop,text='enviar')
 
 def item_clicked(event):
-    global button_created,btEnvia
+    global button_created2,btVizu,btEnvia
+    if button_created:
+        btEnvia.destroy()
+    if button_created2:
+        btVizu.destroy()
+        btVizu = tk.Button(frameTvTop,command=visualiza,text='Carregar Visualização')
+        btVizu.pack(fill='x',padx=10,pady=10)
+    else:
+        btVizu = tk.Button(frameTvTop,command=visualiza,text='Carregar Visualização')
+        btVizu.pack(fill='x',padx=10,pady=10)
+        button_created2 = True
+
+
+def visualiza():
+    global button_created,btEnvia,btVizu
+    btVizu.destroy()
     treeviewVizu.delete(*treeviewVizu.get_children())
     item = treeview.selection()[0]
     value = treeview.item(item, "values")[0]
     linkView=(f"https://messaging.covisint.com/invoke/HTTPConnector.Mailbox/get?action=msg_view&id={value}")
     pedidos = trataPedescoTxt(linkView)
-    for i in range (0,len(pedidos['peca'])):
-        treeviewVizu.insert("", tk.END,values=(pedidos['procedure'][i],pedidos['codCliente'][i],pedidos['nPedido'][i],pedidos['quantidade'][i],pedidos['codFornecedor'][i]))
+    for i in range (0,len(pedidos['codigoClienteCol'])):
+        treeviewVizu.insert("", tk.END,values=(pedidos['codigoClienteCol'][i],pedidos['clienteCol'][i],pedidos['produtoCol'][i],pedidos['produtoRefCol'][i],pedidos['quantidadeCol'][i]))
     def enviar():
-        for values in pedidos['procedure']:
-            print(values)
+        for value in pedidos['procedures']:
+            execute(banco,value)
      
     if button_created:
         btEnvia.destroy()

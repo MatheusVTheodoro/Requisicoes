@@ -4,7 +4,36 @@ import firebirdsql
 
 banco='C:\COLISEU\DATA\CAMPOFACIL.FDB'
 
+def select(banco,query):
+    con = firebirdsql.connect(
+        host='localhost',
+        database=banco,
+        user='SYSDBA',
+        password='masterkey',
+        port=3050,
+        charset='WIN1252'
+    )
+    cur = con.cursor()
+    cur.execute(query)
+    resultado = cur.fetchall()
+    cur.close()
+    con.close()
+    return resultado
 
+def execute(banco,query):
+    con = firebirdsql.connect(
+        host='localhost',
+        database=banco,
+        user='SYSDBA',
+        password='masterkey',
+        port=3050,
+        charset='WIN1252'
+    )
+    cur = con.cursor()
+    cur.execute(query)
+    cur.close()
+    con.commit()
+    con.close()
 
 def htmlResponseText(link):
     user='CampFacil'
@@ -66,17 +95,24 @@ def trataPedescoTxt(link):
         tam=tam+6
         linhaDoPedido = value[tam:tam+5]
         quantidade=int(quantidade)
-        procrdure=(f"execute procedure('{codCliente}','{nPedido}','{NPedidoGMSAP}','{peca}',{quantidade})")
-        procedureLT.append(procrdure)
-        pecaLT.append(peca)
-        codClienteLT.append(codCliente)
-        nPedidoLT.append(nPedido)
-        quantidadeLT.append(quantidade)
-        codFornecedorLT.append(codFornecedor)
+
+        cliente=select(banco,(f"select NOME_FANTASIA from clientes where clientes.DOC_EX = '{codCliente}'"))
+        produto=select(banco,(f"select descricao from produtos where produtos.codigo_fab = '{peca}'"))
         
-    return {'procedure':procedureLT,'peca':pecaLT,'codCliente':codClienteLT,'nPedido':nPedidoLT,'quantidade':quantidadeLT,'codFornecedor':codFornecedorLT}
-
-
+        if(produto==[]):
+            produto='Produto não vinculado'
+        else:
+            produto=produto[0]
+            produto=str(produto)
+            produto = produto[2:-3]
+        
+        
+        if(cliente==[]):
+            cliente='Codigo de cliente não vinculado'
+        else:
+            cliente=cliente[0]
+            cliente=str(cliente)
+            cliente = cliente[2:-3]
 
         
         procedure=(f"execute procedure GERAR_REQUISICAO('{codCliente}','{nPedido}','{int(NPedidoGMSAP)}','{peca}',{quantidade});")
