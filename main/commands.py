@@ -2,9 +2,13 @@ import requests as req
 import re
 import firebirdsql
 
-banco='C:\COLISEU\DATA\CAMPOFACIL.FDB'
+global banco
 
-def select(banco,query):
+with open('C:/COLISEU/Requisicoes/banco.txt', 'r') as arquivo:
+    banco= arquivo.read()
+
+def select(query):
+    global banco
     con = firebirdsql.connect(
         host='localhost',
         database=banco,
@@ -20,7 +24,8 @@ def select(banco,query):
     con.close()
     return resultado
 
-def execute(banco,query):
+def execute(query):
+    global banco
     con = firebirdsql.connect(
         host='localhost',
         database=banco,
@@ -42,6 +47,7 @@ def htmlResponseText(link):
     return(response.text)
 
 def opcoes():
+    global banco
     html=htmlResponseText("https://messaging.covisint.com/invoke/HTTPConnector.Mailbox/get")
     MessageId=[]
     Data=[]
@@ -65,7 +71,6 @@ def opcoes():
     return {'MessageID':MessageId,'Data':Data,'Hora':Hora}
         
 def trataPedescoTxt(link):
-    banco='C:\COLISEU\DATA\CAMPOFACIL.FDB'
     clienteCol=[]
     produtoCol=[]
     produtoRefCol=[]
@@ -96,8 +101,8 @@ def trataPedescoTxt(link):
         linhaDoPedido = value[tam:tam+5]
         quantidade=int(quantidade)
 
-        cliente=select(banco,(f"select NOME_FANTASIA from clientes where clientes.DOC_EX = '{codCliente}'"))
-        produto=select(banco,(f"select descricao from produtos where produtos.codigo_fab = '{peca}'"))
+        cliente=select((f"select NOME_FANTASIA from clientes where clientes.DOC_EX = '{codCliente}'"))
+        produto=select((f"select descricao from produtos where produtos.codigo_fab = '{peca}'"))
         
         if(produto==[]):
             produto='Produto não vinculado'

@@ -13,7 +13,7 @@ root.config(bg=cor["branco"])
 root.state('zoomed')
 root.title("Requisições")
 root.iconbitmap(default='')
-img_coliseu =PhotoImage(file="C:/REPOSITORIOS/COLISEU/ColiseuRequisicoes/main/assets/COLISEUsFundo.png")
+img_coliseu =PhotoImage(file="C:/COLISEU/REQUISICOES/assets/COLISEUsFundo.png")
 img_coliseu = img_coliseu.subsample(2, 2)
 
 frameTop = tk.Frame(root,height=100,bg=cor["azul"],padx=10)
@@ -66,7 +66,7 @@ treeviewVizu.heading("produto", text="Produto")
 treeviewVizu.heading("referencia", text="Ref.")
 treeviewVizu.heading("quantidade", text="Uni.")
 
-btEnvia = tk.Button(frameTvTop,text='enviar')
+btEnvia = tk.Button(frameTvTop,text='Importar')
 
 def item_clicked(event):
     global button_created2,btVizu,btEnvia
@@ -94,14 +94,14 @@ def visualiza():
         treeviewVizu.insert("", tk.END,values=(pedidos['codigoClienteCol'][i],pedidos['clienteCol'][i],pedidos['produtoCol'][i],pedidos['produtoRefCol'][i],pedidos['quantidadeCol'][i]))
     def enviar():
         for value in pedidos['procedures']:
-            execute(banco,value)
+            execute(value)
      
     if button_created:
         btEnvia.destroy()
-        btEnvia = tk.Button(frameTvTop,command=enviar,text='enviar')
+        btEnvia = tk.Button(frameTvTop,command=enviar,text='Importar')
         btEnvia.pack(fill='x',padx=10,pady=10)
     else:
-        btEnvia = tk.Button(frameTvTop,command=enviar,text='enviar')
+        btEnvia = tk.Button(frameTvTop,command=enviar,text='Importar')
         btEnvia.pack(fill='x',padx=10,pady=10)
         button_created = True
     
