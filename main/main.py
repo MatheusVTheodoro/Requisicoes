@@ -5,15 +5,15 @@ from tkinter import PhotoImage
 
 button_created = False
 button_created2 = False
-progress_bar_created = False
+pbVizu_created = False
 
 def trataPedescoTxt(link):
-    global treeviewVizu,root,progress_bar
+    global tvVizu,root,pbVizu
     procedures=[]
     texto = htmlResponseText(link)
     texto = re.findall("98.............................................................",texto)
     maximum=len(texto) 
-    progress_bar['maximum'] = maximum
+    pbVizu['maximum'] = maximum
     for index,value in enumerate(texto):
         tam = 8
         peca = value[0:0+tam]
@@ -58,16 +58,11 @@ def trataPedescoTxt(link):
         
         procedure=(f"execute procedure GERAR_REQUISICAO('{codCliente}','{nPedido}','{int(NPedidoGMSAP)}','{peca}',{quantidade});")
         procedures.append(procedure)
-        treeviewVizu.insert("", tk.END,values=(codCliente,cliente,produto,peca,quantidade))
-        progress_bar['value'] = index+1
+        tvVizu.insert("", tk.END,values=(codCliente,cliente,produto,peca,quantidade))
+        pbVizu['value'] = index+1
         root.update()
         
     return {'procedures':procedures}
-
-
-
-
-
 
 options=opcoes()
 cor = {"azul" : "#1D3557","azulClaro" : "#457B9D","branco" : "#F1FAEE","vermelho" : "#E63946", "cinza" : "#8D99AE"}
@@ -138,17 +133,17 @@ for X in range (0,len(options['Data'])):
     treeview.insert("", tk.END,values=(options['MessageID'][X],options['Size'][X],options['Data'][X],options['Hora'][X],"Confirmado"))
 
 
-treeviewVizu = ttk.Treeview(frameTvBot, columns=("codCliente","cliente","produto","referencia","quantidade"), show='headings')
-treeviewVizu.column("codCliente", anchor="center")
-treeviewVizu.column("cliente", anchor="center")
-treeviewVizu.column("produto", anchor="center")
-treeviewVizu.column("referencia", anchor="center")
-treeviewVizu.column("quantidade", anchor="center")
-treeviewVizu.heading("codCliente", text="Cód.Cliente")
-treeviewVizu.heading("cliente", text="Cliente")
-treeviewVizu.heading("produto", text="Produto")
-treeviewVizu.heading("referencia", text="Ref.")
-treeviewVizu.heading("quantidade", text="Uni.")
+tvVizu = ttk.Treeview(frameTvBot, columns=("codCliente","cliente","produto","referencia","quantidade"), show='headings')
+tvVizu.column("codCliente", anchor="center")
+tvVizu.column("cliente", anchor="center")
+tvVizu.column("produto", anchor="center")
+tvVizu.column("referencia", anchor="center")
+tvVizu.column("quantidade", anchor="center")
+tvVizu.heading("codCliente", text="Cód.Cliente")
+tvVizu.heading("cliente", text="Cliente")
+tvVizu.heading("produto", text="Produto")
+tvVizu.heading("referencia", text="Ref.")
+tvVizu.heading("quantidade", text="Uni.")
 
 btEnvia = tk.Button(frameTvTop,text='Importar')
 
@@ -174,22 +169,12 @@ def visualiza():
 
     
 
-    treeviewVizu.delete(*treeviewVizu.get_children())
+    tvVizu.delete(*tvVizu.get_children())
     item = treeview.selection()[0]
     value = treeview.item(item, "values")[0]
     linkView=(f"https://messaging.covisint.com/invoke/HTTPConnector.Mailbox/get?action=msg_view&id={value}")
     pedidos = trataPedescoTxt(linkView)
 
-    
-
-    '''maximum=len(pedidos['codigoClienteCol']) 
-    progress_bar['maximum'] = maximum
-    for i in range (0,len(pedidos['codigoClienteCol'])):
-        progress_bar['value'] = i+1
-        treeviewVizu.insert("", tk.END,values=(pedidos['codigoClienteCol'][i],pedidos['clienteCol'][i],pedidos['produtoCol'][i],pedidos['produtoRefCol'][i],pedidos['quantidadeCol'][i]))
-        root.update()
-        root.after(500)'''
-    
     def enviar():
         for value in pedidos['procedures']:
             execute(value)
@@ -211,17 +196,17 @@ scrollY = ttk.Scrollbar(frame_tv, orient="vertical", command=treeview.yview)
 scrollY.pack(side="right", fill="y")
 
 
-scrollY2 = ttk.Scrollbar(frameTvBot, orient="vertical", command=treeviewVizu.yview)
+scrollY2 = ttk.Scrollbar(frameTvBot, orient="vertical", command=tvVizu.yview)
 scrollY2.pack(side="right", fill="y")
 
 
 treeview.configure(yscrollcommand=scrollY.set)
-treeviewVizu.configure(yscrollcommand=scrollY2.set)
+tvVizu.configure(yscrollcommand=scrollY2.set)
 treeview.pack(fill="both", expand=True)
-treeviewVizu.pack(fill="both", expand=True,padx=10,pady=10)
+tvVizu.pack(fill="both", expand=True,padx=10,pady=10)
 
-progress_bar = ttk.Progressbar(frameTvTop, mode='determinate')
-progress_bar.grid(row=1, column=0, padx=10, pady=10, sticky='ew')
+pbVizu = ttk.Progressbar(frameTvTop, mode='determinate')
+pbVizu.grid(row=1, column=0, padx=10, pady=10, sticky='ew')
 
 
 
