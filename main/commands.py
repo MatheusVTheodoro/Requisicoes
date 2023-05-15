@@ -1,8 +1,9 @@
 import requests as req
 import re
 import firebirdsql
-
+import tkinter as tk
 global banco
+
 
 with open('C:/COLISEU/Requisicoes/banco.txt', 'r') as arquivo:
     banco= arquivo.read()
@@ -76,66 +77,5 @@ def opcoes():
         Hora.append(hora)
 
     return {'MessageID':MessageId,'Data':Data,'Hora':Hora, 'Size' :Size}
-opcoes()        
-def trataPedescoTxt(link):
-    clienteCol=[]
-    produtoCol=[]
-    produtoRefCol=[]
-    quantidadeCol=[]
-    codigoClienteCol=[]
-    procedures=[]
-    texto = htmlResponseText(link)
-    texto = re.findall("98.............................................................",texto)
-    for value in texto:
-        tam = 8
-        peca = value[0:0+tam]
-        codCliente = value[tam:tam+6]
-        tam=tam+6
-        nPedido = value[tam:tam+6]
-        tam=tam+6
-        quantidade = value[tam:tam+5]
-        tam=tam+5
-        datavalue = value[tam:tam+8]
-        tam=tam+8
-        codFornecedor = value[tam:tam+9]
-        tam=tam+9
-        tipoDSODSC = value[tam:tam+1]
-        tam = tam+1
-        NPedidoGMSAP = value[tam:tam+9]
-        tam=tam+9
-        hora = value[tam:tam+6]
-        tam=tam+6
-        linhaDoPedido = value[tam:tam+5]
-        quantidade=int(quantidade)
-
-        cliente=select((f"select NOME_FANTASIA from clientes where clientes.DOC_EX = '{codCliente}'"))
-        produto=select((f"select descricao from produtos where produtos.codigo_fab = '{peca}'"))
         
-        if(produto==[]):
-            produto='Produto não vinculado'
-        else:
-            produto=produto[0]
-            produto=str(produto)
-            produto = produto[2:-3]
-        
-        
-        if(cliente==[]):
-            cliente='Codigo de cliente não vinculado'
-        else:
-            cliente=cliente[0]
-            cliente=str(cliente)
-            cliente = cliente[2:-3]
-
-        
-        procedure=(f"execute procedure GERAR_REQUISICAO('{codCliente}','{nPedido}','{int(NPedidoGMSAP)}','{peca}',{quantidade});")
-        procedures.append(procedure)
-        clienteCol.append(cliente)
-        codigoClienteCol.append(codCliente)
-        produtoCol.append(produto)
-        produtoRefCol.append(peca)
-        quantidadeCol.append(quantidade)
-        print(cliente)
-    return {'procedures':procedures,'clienteCol':clienteCol,'codigoClienteCol':codigoClienteCol,'produtoCol':produtoCol,'produtoRefCol':produtoRefCol,'quantidadeCol':quantidadeCol,}
-
-
 

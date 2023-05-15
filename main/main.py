@@ -2,8 +2,73 @@ import tkinter as tk
 from tkinter import ttk
 from commands import *
 from tkinter import PhotoImage
+
 button_created = False
 button_created2 = False
+progress_bar_created = False
+
+def trataPedescoTxt(link):
+    global treeviewVizu,root,progress_bar
+    procedures=[]
+    texto = htmlResponseText(link)
+    texto = re.findall("98.............................................................",texto)
+    maximum=len(texto) 
+    progress_bar['maximum'] = maximum
+    for index,value in enumerate(texto):
+        tam = 8
+        peca = value[0:0+tam]
+        codCliente = value[tam:tam+6]
+        tam=tam+6
+        nPedido = value[tam:tam+6]
+        tam=tam+6
+        quantidade = value[tam:tam+5]
+        tam=tam+5
+        datavalue = value[tam:tam+8]
+        tam=tam+8
+        codFornecedor = value[tam:tam+9]
+        tam=tam+9
+        tipoDSODSC = value[tam:tam+1]
+        tam = tam+1
+        NPedidoGMSAP = value[tam:tam+9]
+        tam=tam+9
+        hora = value[tam:tam+6]
+        tam=tam+6
+        linhaDoPedido = value[tam:tam+5]
+        quantidade=int(quantidade)
+
+        cliente=select((f"select NOME_FANTASIA from clientes where clientes.DOC_EX = '{codCliente}'"))
+        produto=select((f"select descricao from produtos where produtos.codigo_fab = '{peca}'"))
+        
+        if(produto==[]):
+            produto='Produto não vinculado'
+        else:
+            produto=produto[0]
+            produto=str(produto)
+            produto = produto[2:-3]
+        
+        
+        if(cliente==[]):
+            cliente='Codigo de cliente não vinculado'
+
+        else:
+            cliente=cliente[0]
+            cliente=str(cliente)
+            cliente = cliente[2:-3]
+
+        
+        procedure=(f"execute procedure GERAR_REQUISICAO('{codCliente}','{nPedido}','{int(NPedidoGMSAP)}','{peca}',{quantidade});")
+        procedures.append(procedure)
+        treeviewVizu.insert("", tk.END,values=(codCliente,cliente,produto,peca,quantidade))
+        progress_bar['value'] = index+1
+        root.update()
+        
+    return {'procedures':procedures}
+
+
+
+
+
+
 options=opcoes()
 cor = {"azul" : "#1D3557","azulClaro" : "#457B9D","branco" : "#F1FAEE","vermelho" : "#E63946", "cinza" : "#8D99AE"}
 
@@ -42,13 +107,18 @@ frameCom2Tv.columnconfigure(0, weight=1)
 frameTvTop = tk.Frame(frameCom2Tv,bg=cor["cinza"])
 frameTvTop.grid(row=0, column=0, sticky='nsew', rowspan=2)
 
+# Configura o gerenciador de layout grid para ajustar os widgets de forma responsiva
+frameTvTop.grid_rowconfigure(0, weight=1)
+frameTvTop.grid_columnconfigure(0, weight=1)
+
 frameTvBot = tk.Frame(frameCom2Tv,bg=cor["azul"])
 frameTvBot.grid(row=2, column=0, sticky='nsew')
 
+frame_tv = ttk.Frame(frameTvTop)
+frame_tv.grid(row=0, column=0, padx=10, pady=10, sticky='nsew')
 
 
-
-treeview = ttk.Treeview(frameTvTop, columns=("Message Id","Size", "Data","Hora","Status"), show='headings')
+treeview = ttk.Treeview(frame_tv, columns=("Message Id","Size", "Data","Hora","Status"), show='headings')
 
 treeview.column("Message Id", anchor="center")
 treeview.column("Size", anchor="center")
@@ -82,30 +152,44 @@ treeviewVizu.heading("quantidade", text="Uni.")
 
 btEnvia = tk.Button(frameTvTop,text='Importar')
 
+
+
 def item_clicked(event):
     global button_created2,btVizu,btEnvia
+    
     if button_created:
         btEnvia.destroy()
     if button_created2:
         btVizu.destroy()
         btVizu = tk.Button(frameTvTop,command=visualiza,text='Carregar Visualização')
-        btVizu.pack(fill='x',padx=10,pady=10)
+        btVizu.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
     else:
         btVizu = tk.Button(frameTvTop,command=visualiza,text='Carregar Visualização')
-        btVizu.pack(fill='x',padx=10,pady=10)
+        btVizu.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
         button_created2 = True
-
-
+   
 def visualiza():
     global button_created,btEnvia,btVizu
     btVizu.destroy()
+
+    
+
     treeviewVizu.delete(*treeviewVizu.get_children())
     item = treeview.selection()[0]
     value = treeview.item(item, "values")[0]
     linkView=(f"https://messaging.covisint.com/invoke/HTTPConnector.Mailbox/get?action=msg_view&id={value}")
     pedidos = trataPedescoTxt(linkView)
+
+    
+
+    '''maximum=len(pedidos['codigoClienteCol']) 
+    progress_bar['maximum'] = maximum
     for i in range (0,len(pedidos['codigoClienteCol'])):
+        progress_bar['value'] = i+1
         treeviewVizu.insert("", tk.END,values=(pedidos['codigoClienteCol'][i],pedidos['clienteCol'][i],pedidos['produtoCol'][i],pedidos['produtoRefCol'][i],pedidos['quantidadeCol'][i]))
+        root.update()
+        root.after(500)'''
+    
     def enviar():
         for value in pedidos['procedures']:
             execute(value)
@@ -113,24 +197,33 @@ def visualiza():
     if button_created:
         btEnvia.destroy()
         btEnvia = tk.Button(frameTvTop,command=enviar,text='Importar')
-        btEnvia.pack(fill='x',padx=10,pady=10)
+        btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
     else:
         btEnvia = tk.Button(frameTvTop,command=enviar,text='Importar')
-        btEnvia.pack(fill='x',padx=10,pady=10)
+        btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
         button_created = True
     
 
 treeview.bind("<ButtonRelease-1>", item_clicked)
 
-scrollY = ttk.Scrollbar(frameTvTop, orient="vertical", command=treeview.yview)
-scrollY2 = ttk.Scrollbar(frameTvBot, orient="vertical", command=treeviewVizu.yview)
+
+scrollY = ttk.Scrollbar(frame_tv, orient="vertical", command=treeview.yview)
 scrollY.pack(side="right", fill="y")
+
+
+scrollY2 = ttk.Scrollbar(frameTvBot, orient="vertical", command=treeviewVizu.yview)
 scrollY2.pack(side="right", fill="y")
+
 
 treeview.configure(yscrollcommand=scrollY.set)
 treeviewVizu.configure(yscrollcommand=scrollY2.set)
-treeview.pack(fill="both", expand=True,padx=10,pady=10)
+treeview.pack(fill="both", expand=True)
 treeviewVizu.pack(fill="both", expand=True,padx=10,pady=10)
+
+progress_bar = ttk.Progressbar(frameTvTop, mode='determinate')
+progress_bar.grid(row=1, column=0, padx=10, pady=10, sticky='ew')
+
+
 
 root.mainloop()
 
