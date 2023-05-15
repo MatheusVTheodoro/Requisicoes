@@ -1,0 +1,1 @@
+SELECT * FROM nota_fiscal JOIN clientes ON nota_fiscal.id_cliente = clientes.id_cliente WHERE clientes.DOC_EX IS NOT NULL;

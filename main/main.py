@@ -59,7 +59,11 @@ for X in range (0,len(options['Data'])):
 
 
 treeviewVizu = ttk.Treeview(frameTvBot, columns=("codCliente","cliente","produto","referencia","quantidade"), show='headings')
-
+treeviewVizu.column("codCliente", anchor="center")
+treeviewVizu.column("cliente", anchor="center")
+treeviewVizu.column("produto", anchor="center")
+treeviewVizu.column("referencia", anchor="center")
+treeviewVizu.column("quantidade", anchor="center")
 treeviewVizu.heading("codCliente", text="Cód.Cliente")
 treeviewVizu.heading("cliente", text="Cliente")
 treeviewVizu.heading("produto", text="Produto")
@@ -119,3 +123,5 @@ treeview.pack(fill="both", expand=True,padx=10,pady=10)
 treeviewVizu.pack(fill="both", expand=True,padx=10,pady=10)
 
 root.mainloop()
+
+

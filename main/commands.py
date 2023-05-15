@@ -6,6 +6,7 @@ global banco
 
 with open('C:/COLISEU/Requisicoes/banco.txt', 'r') as arquivo:
     banco= arquivo.read()
+    print(banco)
 
 def select(query):
     global banco
