@@ -53,7 +53,13 @@ def opcoes():
     MessageId=[]
     Data=[]
     Hora=[]
+    Size=[]
     
+    X = re.findall("&nbsp;[0-9]+&nbsp",html)
+    for v in X:
+        message = re.sub("&nbsp;","",v)
+        Size.append(re.sub("&nbsp","",message))
+
     X = re.findall("<td><tt>&nbsp;........&nbsp;",html)
     for v in X:
         message = re.sub("<td><tt>&nbsp;","",v)
@@ -69,8 +75,8 @@ def opcoes():
         hora = re.sub("&nbsp;","",v)
         Hora.append(hora)
 
-    return {'MessageID':MessageId,'Data':Data,'Hora':Hora}
-        
+    return {'MessageID':MessageId,'Data':Data,'Hora':Hora, 'Size' :Size}
+opcoes()        
 def trataPedescoTxt(link):
     clienteCol=[]
     produtoCol=[]

@@ -48,14 +48,24 @@ frameTvBot.grid(row=2, column=0, sticky='nsew')
 
 
 
-treeview = ttk.Treeview(frameTvTop, columns=("Message Id", "Data","Hora","Status"), show='headings')
+treeview = ttk.Treeview(frameTvTop, columns=("Message Id","Size", "Data","Hora","Status"), show='headings')
+
+treeview.column("Message Id", anchor="center")
+treeview.column("Size", anchor="center")
+treeview.column("Data", anchor="center")
+treeview.column("Hora", anchor="center")
+treeview.column("Status", anchor="center")
+
 treeview.heading("Message Id", text="Message Id")
+treeview.heading("Size", text="Size")
 treeview.heading("Data", text="Data")
 treeview.heading("Hora", text="Hora")
 treeview.heading("Status", text="Status")
 
+
+
 for X in range (0,len(options['Data'])):
-    treeview.insert("", tk.END,values=(options['MessageID'][X],options['Data'][X],options['Hora'][X],"Confirmado"))
+    treeview.insert("", tk.END,values=(options['MessageID'][X],options['Size'][X],options['Data'][X],options['Hora'][X],"Confirmado"))
 
 
 treeviewVizu = ttk.Treeview(frameTvBot, columns=("codCliente","cliente","produto","referencia","quantidade"), show='headings')
