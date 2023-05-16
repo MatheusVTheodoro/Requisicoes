@@ -1,46 +1,21 @@
-import tkinter as tk
 from tkinter import ttk
+from tkinter import *
 
-def insert_values():
-    values = ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5']  # Lista de valores a serem inseridos
-    total_values = len(values)  # Total de valores na lista
+root = ttk.Tk()
+# criar a Treeview
+tree = ttk.Treeview(root)
+tree.pack()
 
-    progress_bar['maximum'] = total_values  # Define o valor máximo da ProgressBar
+# adicionar uma coluna
+tree["columns"] = ("col1", "col2")
 
-    for index, value in enumerate(values):
-        tree.insert('', 'end', text=value)  # Insere o valor no TreeView
-        progress_bar['value'] = index + 1  # Atualiza o valor da ProgressBar
-        root.update()  # Atualiza a janela
-        root.after(500)  # Pausa de 500 milissegundos (0,5 segundos)
+# adicionar alguns dados
+tree.insert("", "end", text="linha 1", values=("valor 1", "valor 2"))
+tree.insert("", "end", text="linha 2", values=("valor 3", "valor 4"))
 
-# Cria a janela principal
-root = tk.Tk()
-root.title("Exemplo de ProgressBar com TreeView e Scrollbar")
+# definir uma tag com a cor desejada
+tree.tag_configure("cor_desejada", background="red")
 
-# Cria um frame para conter a TreeView
-frame_tv = ttk.Frame(root)
-frame_tv.grid(row=0, column=0, padx=10, pady=10, sticky='nsew')
-
-# Cria uma TreeView
-tree = ttk.Treeview(frame_tv)
-tree.pack(side='left', fill='both', expand=True)
-
-# Cria uma Scrollbar vertical
-scrollY = ttk.Scrollbar(frame_tv, orient="vertical", command=tree.yview)
-scrollY.pack(side="right", fill="y")
-tree.configure(yscrollcommand=scrollY.set)
-
-# Cria uma barra de progresso
-progress_bar = ttk.Progressbar(root, mode='determinate')
-progress_bar.grid(row=1, column=0, padx=10, pady=10, sticky='ew')
-
-# Cria um botão para iniciar a inserção dos valores
-insert_button = tk.Button(root, text="Inserir Valores", command=insert_values)
-insert_button.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-
-# Configura o redimensionamento responsivo dos widgets
-root.grid_rowconfigure(0, weight=1)
-root.grid_columnconfigure(0, weight=1)
-
-# Executa o loop principal da janela
+# aplicar a tag à célula específica
+tree.item("linha 1", tags=("cor_desejada",))
 root.mainloop()
