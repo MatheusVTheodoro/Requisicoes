@@ -1,215 +1,160 @@
+import requests as req
+import re
+import firebirdsql
 import tkinter as tk
 from tkinter import ttk
-from commands import *
 from tkinter import PhotoImage
 
-button_created = False
-button_created2 = False
-pbVizu_created = False
+def main():
 
-def trataPedescoTxt(link):
-    global tvVizu,root,pbVizu
-    procedures=[]
-    texto = htmlResponseText(link)
-    texto = re.findall("98.............................................................",texto)
-    maximum=len(texto) 
-    pbVizu['maximum'] = maximum
-    for index,value in enumerate(texto):
-        tam = 8
-        peca = value[0:0+tam]
-        codCliente = value[tam:tam+6]
-        tam=tam+6
-        nPedido = value[tam:tam+6]
-        tam=tam+6
-        quantidade = value[tam:tam+5]
-        tam=tam+5
-        datavalue = value[tam:tam+8]
-        tam=tam+8
-        codFornecedor = value[tam:tam+9]
-        tam=tam+9
-        tipoDSODSC = value[tam:tam+1]
-        tam = tam+1
-        NPedidoGMSAP = value[tam:tam+9]
-        tam=tam+9
-        hora = value[tam:tam+6]
-        tam=tam+6
-        linhaDoPedido = value[tam:tam+5]
-        quantidade=int(quantidade)
+    #dicionario de cores do app
+    cor = {
+    "verde": "#A7C957",
+    "azul": "#1D3557",
+    "azulClaro": "#457B9D",
+    "branco": "#F1FAEE",
+    "vermelho": "#E63946",
+    "cinza": "#8D99AE"
+    }
 
-        cliente=select((f"select NOME_FANTASIA from clientes where clientes.DOC_EX = '{codCliente}'"))
-        produto=select((f"select descricao from produtos where produtos.codigo_fab = '{peca}'"))
-        
-        if(produto==[]):
-            produto='Produto não vinculado'
-        else:
-            produto=produto[0]
-            produto=str(produto)
-            produto = produto[2:-3]
-        
-        
-        if(cliente==[]):
-            cliente='Codigo de cliente não vinculado'
+    #main frame
+    root = tk.Tk()
+    root.geometry("800x600")
+    root.config(bg=cor["branco"])
+    root.state('zoomed')
+    root.title("")
+    root.iconbitmap(default='')
 
-        else:
-            cliente=cliente[0]
-            cliente=str(cliente)
-            cliente = cliente[2:-3]
+    #status inicial dos botões
+    button_created = True
+    button_created2 = False
+    pbVizu_created = False
 
-        
-        procedure=(f"execute procedure GERAR_REQUISICAO('{codCliente}','{nPedido}','{int(NPedidoGMSAP)}','{peca}',{quantidade});")
-        procedures.append(procedure)
-        tvVizu.insert("", tk.END,values=(codCliente,cliente,produto,peca,quantidade))
-        pbVizu['value'] = index+1
-        root.update()
-        
-    return {'procedures':procedures}
+    #imagem logo da coliseu 
+    img_coliseu =PhotoImage(file="C:/COLISEU/REQUISICOES/assets/COLISEUsFundo.png")
+    img_coliseu = img_coliseu.subsample(2, 2)
 
-options=opcoes()
-cor = {"azul" : "#1D3557","azulClaro" : "#457B9D","branco" : "#F1FAEE","vermelho" : "#E63946", "cinza" : "#8D99AE"}
+    #frame superior onde fica o cabeçario com logo e titulo
+    frame_cabecario = tk.Frame(root,height=100,bg=cor["azul"],padx=10)
+    frame_cabecario.pack(side="top", fill="x")
+    frame_cabecario.columnconfigure(0, weight=1)
+    frame_cabecario.columnconfigure(1, weight=4)
+    frame_cabecario.columnconfigure(2, weight=1)
+    frame_cabecario.rowconfigure(0, weight=1)
 
-root = tk.Tk()
-root.geometry("800x600")
-root.config(bg=cor["branco"])
-root.state('zoomed')
-root.title("Requisições")
-root.iconbitmap(default='')
-img_coliseu =PhotoImage(file="C:/COLISEU/REQUISICOES/assets/COLISEUsFundo.png")
-img_coliseu = img_coliseu.subsample(2, 2)
+    #label criado para posicionar a logo
+    lb_Logo = ttk.Label(frame_cabecario, image=img_coliseu,background=cor["azul"])
+    lb_Logo.grid(row=0,column=2)
 
-frameTop = tk.Frame(root,height=100,bg=cor["azul"],padx=10)
-frameTop.pack(side="top", fill="x")
-frameTop.columnconfigure(0, weight=1)
-frameTop.columnconfigure(1, weight=4)
-frameTop.columnconfigure(2, weight=1)
-frameTop.rowconfigure(0, weight=1)
-
-labelLogo = ttk.Label(frameTop, image=img_coliseu,background=cor["azul"])
-labelLogo.grid(row=0,column=2)
-
-lb_req = ttk.Label(frameTop, text="Requisições",background=cor["azul"],foreground=cor["branco"]
+    #titulo da aplicação no cabeçario
+    lb_requisicoes = ttk.Label(frame_cabecario, text="Requisições",background=cor["azul"],foreground=cor["branco"]
                    ,font=("Arial", 24,"bold"))
-lb_req.grid(row=0,column=0)
+    lb_requisicoes.grid(row=0,column=0)
+
+    #frame com as tabelas vizu e opcoes
+    frame_tabelas = tk.Frame(root,bg=cor["vermelho"])
+    frame_tabelas.pack(fill="both", expand=True, padx=10, pady=10)
+    frame_tabelas.rowconfigure(0, weight=4)
+    frame_tabelas.rowconfigure(1, weight=2)
+    frame_tabelas.rowconfigure(2, weight=1)
+    frame_tabelas.columnconfigure(0, weight=1)
+
+    #frame com a tabela de opções (a de cima)
+    frame_opcoes = tk.Frame(frame_tabelas,bg=cor["cinza"])
+    frame_opcoes.grid(row=0, column=0, sticky='nsew', rowspan=2)
+    frame_opcoes.grid_rowconfigure(0, weight=1)
+    frame_opcoes.grid_columnconfigure(0, weight=1)
+
+    #frame utilizado para posicionar a tabela de opções juntamente com seu scroll
+    frame_tabela_opcoes = tk.Frame(frame_opcoes,bg=cor["azul"])
+    frame_tabela_opcoes.grid(row=0, column=0, padx=10, pady=10, sticky='nsew')
+
+    #frame com a tabela de visualizar (a de baixo)
+    frame_vizu = tk.Frame(frame_tabelas,bg=cor["cinza"])
+    frame_vizu.grid(row=2, column=0, sticky='nsew')
+    frame_vizu.grid_rowconfigure(0, weight=1)
+    frame_vizu.grid_columnconfigure(0, weight=1)
+
+    #frame utilizado para posicionar a tabela de visualizar juntamente com seu scroll
+    frame_tabela_vizu = tk.Frame(frame_vizu,bg=cor["azul"])
+    frame_tabela_vizu.grid(row=0, column=0, padx=10, pady=10, sticky='nsew')
+
+    #configurações da tabela de opções
+    tabela_opcoes = ttk.Treeview(frame_tabela_opcoes, columns=("Message Id","Size", "Data","Hora"), show='headings')
+    tabela_opcoes.column("Message Id", anchor="center")
+    tabela_opcoes.column("Size", anchor="center")
+    tabela_opcoes.column("Data", anchor="center")
+    tabela_opcoes.column("Hora", anchor="center")
+    tabela_opcoes.heading("Message Id", text="Message Id")
+    tabela_opcoes.heading("Size", text="Size")
+    tabela_opcoes.heading("Data", text="Data")
+    tabela_opcoes.heading("Hora", text="Hora")
+
+    #configurações da tabela de vizualisar
+    tabela_vizu = ttk.Treeview(frame_tabela_vizu, columns=("codCliente","cliente","produto","referencia","quantidade"), show='headings')
+    tabela_vizu.column("codCliente", anchor="center")
+    tabela_vizu.column("cliente", anchor="center")
+    tabela_vizu.column("produto", anchor="center")
+    tabela_vizu.column("referencia", anchor="center")
+    tabela_vizu.column("quantidade", anchor="center")
+    tabela_vizu.heading("codCliente", text="Cód.Cliente")
+    tabela_vizu.heading("cliente", text="Cliente")
+    tabela_vizu.heading("produto", text="Produto")
+    tabela_vizu.heading("referencia", text="Ref.")
+    tabela_vizu.heading("quantidade", text="Uni.")
+    scrollY_vizu = ttk.Scrollbar(frame_tabela_vizu, orient="vertical", command=tabela_vizu.yview)
+    scrollY_vizu.pack(side="right", fill="y")
+    tabela_vizu.configure(yscrollcommand=scrollY_vizu.set)
+    tabela_vizu.pack(fill="both", expand=True,pady=5,padx=2)
+
+    #configurações da tabela de opcoes
+    tabela_opcoes.tag_configure("branco", background=cor["branco"])
+    tabela_opcoes.tag_configure("verde", background=cor["verde"])
+    #tabela_opcoes.bind("<ButtonRelease-1>", item_clicked)
+    scrollY_opcoes = ttk.Scrollbar(frame_tabela_opcoes, orient="vertical", command=tabela_opcoes.yview)
+    scrollY_opcoes.pack(side="right", fill="y")
+    tabela_opcoes.configure(yscrollcommand=scrollY_opcoes.set)
+    tabela_opcoes.pack(fill="both", expand=True,pady=5,padx=2)
 
 
 
-frameCom2Tv = tk.Frame(root,bg=cor["vermelho"])
-frameCom2Tv.pack(fill="both", expand=True, padx=10, pady=10)
-frameCom2Tv.rowconfigure(0, weight=4)
-frameCom2Tv.rowconfigure(1, weight=2)
-frameCom2Tv.rowconfigure(2, weight=1)
-frameCom2Tv.columnconfigure(0, weight=1)
+    btEnvia = tk.Button(frame_opcoes,text='Importar',bg=cor["azul"], fg=cor["branco"])
 
-frameTvTop = tk.Frame(frameCom2Tv,bg=cor["cinza"])
-frameTvTop.grid(row=0, column=0, sticky='nsew', rowspan=2)
+    pbVizu = ttk.Progressbar(frame_opcoes, mode='determinate')
 
-# Configura o gerenciador de layout grid para ajustar os widgets de forma responsiva
-frameTvTop.grid_rowconfigure(0, weight=1)
-frameTvTop.grid_columnconfigure(0, weight=1)
+    btVizu = tk.Button(frame_opcoes,command=None,text='Carregar Visualização',bg=cor["azul"], fg=cor["branco"])
+    btVizu.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
 
-frameTvBot = tk.Frame(frameCom2Tv,bg=cor["azul"])
-frameTvBot.grid(row=2, column=0, sticky='nsew')
-
-frame_tv = ttk.Frame(frameTvTop)
-frame_tv.grid(row=0, column=0, padx=10, pady=10, sticky='nsew')
-
-
-treeview = ttk.Treeview(frame_tv, columns=("Message Id","Size", "Data","Hora","Status"), show='headings')
-
-treeview.column("Message Id", anchor="center")
-treeview.column("Size", anchor="center")
-treeview.column("Data", anchor="center")
-treeview.column("Hora", anchor="center")
-treeview.column("Status", anchor="center")
-
-treeview.heading("Message Id", text="Message Id")
-treeview.heading("Size", text="Size")
-treeview.heading("Data", text="Data")
-treeview.heading("Hora", text="Hora")
-treeview.heading("Status", text="Status")
+    root.mainloop()
 
 
 
-for X in range (0,len(options['Data'])):
-    treeview.insert("", tk.END,values=(options['MessageID'][X],options['Size'][X],options['Data'][X],options['Hora'][X],"Confirmado"))
-
-
-tvVizu = ttk.Treeview(frameTvBot, columns=("codCliente","cliente","produto","referencia","quantidade"), show='headings')
-tvVizu.column("codCliente", anchor="center")
-tvVizu.column("cliente", anchor="center")
-tvVizu.column("produto", anchor="center")
-tvVizu.column("referencia", anchor="center")
-tvVizu.column("quantidade", anchor="center")
-tvVizu.heading("codCliente", text="Cód.Cliente")
-tvVizu.heading("cliente", text="Cliente")
-tvVizu.heading("produto", text="Produto")
-tvVizu.heading("referencia", text="Ref.")
-tvVizu.heading("quantidade", text="Uni.")
-
-btEnvia = tk.Button(frameTvTop,text='Importar')
 
 
 
-def item_clicked(event):
-    global button_created2,btVizu,btEnvia
-    
-    if button_created:
-        btEnvia.destroy()
-    if button_created2:
-        btVizu.destroy()
-        btVizu = tk.Button(frameTvTop,command=visualiza,text='Carregar Visualização')
-        btVizu.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-    else:
-        btVizu = tk.Button(frameTvTop,command=visualiza,text='Carregar Visualização')
-        btVizu.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-        button_created2 = True
-   
-def visualiza():
-    global button_created,btEnvia,btVizu
-    btVizu.destroy()
-
-    
-
-    tvVizu.delete(*tvVizu.get_children())
-    item = treeview.selection()[0]
-    value = treeview.item(item, "values")[0]
-    linkView=(f"https://messaging.covisint.com/invoke/HTTPConnector.Mailbox/get?action=msg_view&id={value}")
-    pedidos = trataPedescoTxt(linkView)
-
-    def enviar():
-        for value in pedidos['procedures']:
-            execute(value)
-     
-    if button_created:
-        btEnvia.destroy()
-        btEnvia = tk.Button(frameTvTop,command=enviar,text='Importar')
-        btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-    else:
-        btEnvia = tk.Button(frameTvTop,command=enviar,text='Importar')
-        btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-        button_created = True
-    
-
-treeview.bind("<ButtonRelease-1>", item_clicked)
-
-
-scrollY = ttk.Scrollbar(frame_tv, orient="vertical", command=treeview.yview)
-scrollY.pack(side="right", fill="y")
-
-
-scrollY2 = ttk.Scrollbar(frameTvBot, orient="vertical", command=tvVizu.yview)
-scrollY2.pack(side="right", fill="y")
-
-
-treeview.configure(yscrollcommand=scrollY.set)
-tvVizu.configure(yscrollcommand=scrollY2.set)
-treeview.pack(fill="both", expand=True)
-tvVizu.pack(fill="both", expand=True,padx=10,pady=10)
-
-pbVizu = ttk.Progressbar(frameTvTop, mode='determinate')
-pbVizu.grid(row=1, column=0, padx=10, pady=10, sticky='ew')
 
 
 
-root.mainloop()
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    main()
