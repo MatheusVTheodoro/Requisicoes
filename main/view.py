@@ -88,5 +88,8 @@ class Interface():
     scrollY_vizu.pack(side="right", fill="y")
     tabelaVisu.pack(fill="both", expand=True,pady=5,padx=2)
 
+    def executar(self):
+        self.root.mainloop()
+
 
 
