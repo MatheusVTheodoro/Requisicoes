@@ -1,95 +1,125 @@
-import requests as req
-import re
-import firebirdsql
 import tkinter as tk
 from tkinter import ttk
 from tkinter import PhotoImage
 
-class Interface():
 
-    cor = {"verde" : "#ADC178","azul" : "#1D3557","azulClaro" : "#457B9D","branco" : "#F1FAEE","vermelho" : "#E63946", "cinza" : "#8D99AE"}
-    
-    root = tk.Tk()
-    root.geometry("800x600")
-    root.config(bg=cor["branco"])
-    root.state('zoomed')
-    root.title("Requisições")
-    root.iconbitmap(default='')
-
-    imgColiseu =PhotoImage(file="C:/COLISEU/REQUISICOES/assets/COLISEUsFundo.png")
-    imgColiseu = imgColiseu.subsample(2, 2)
-    frameCabecario = tk.Frame(root,height=100,bg=cor["azul"],padx=10)
-    frameCabecario.columnconfigure(0, weight=1)
-    frameCabecario.columnconfigure(1, weight=4)
-    frameCabecario.columnconfigure(2, weight=1)
-    frameCabecario.rowconfigure(0, weight=1)
-    frameTabelas = tk.Frame(root,bg=cor["vermelho"])
-    frameTabelas.rowconfigure(0, weight=4)
-    frameTabelas.rowconfigure(1, weight=2)
-    frameTabelas.rowconfigure(2, weight=1)
-    frameTabelas.columnconfigure(0, weight=1)
-    frameOpcoes = tk.Frame(frameTabelas,bg=cor["cinza"])
-    frameTabelaOpcoes = tk.Frame(frameOpcoes,bg=cor["azul"])
-    frameVisu = tk.Frame(frameTabelas,bg=cor["cinza"])
-    frameTabelaVisu = tk.Frame(frameVisu,bg=cor["azul"])
-    tabelaOpcoes = ttk.Treeview(frameTabelaOpcoes, columns=("Message Id","Size", "Data","Hora"), show='headings')
-    tabelaOpcoes.column("Message Id", anchor="center")
-    tabelaOpcoes.column("Size", anchor="center")
-    tabelaOpcoes.column("Data", anchor="center")
-    tabelaOpcoes.column("Hora", anchor="center")
-    tabelaOpcoes.heading("Message Id", text="Message Id")
-    tabelaOpcoes.heading("Size", text="Size")
-    tabelaOpcoes.heading("Data", text="Data")
-    tabelaOpcoes.heading("Hora", text="Hora")
-    tabelaOpcoes.tag_configure("branco", background=cor["branco"])
-    tabelaOpcoes.tag_configure("verde", background=cor["verde"])
-    tabelaVisu = ttk.Treeview(frameTabelaVisu, columns=("codCliente","cliente","produto","referencia","quantidade"), show='headings')
-    tabelaVisu.column("codCliente", anchor="center")
-    tabelaVisu.column("cliente", anchor="center")
-    tabelaVisu.column("produto", anchor="center")
-    tabelaVisu.column("referencia", anchor="center")
-    tabelaVisu.column("quantidade", anchor="center")
-    tabelaVisu.heading("codCliente", text="Cód.Cliente")
-    tabelaVisu.heading("cliente", text="Cliente")
-    tabelaVisu.heading("produto", text="Produto")
-    tabelaVisu.heading("referencia", text="Ref.")
-    tabelaVisu.heading("quantidade", text="Uni.")
-    scrollY_opcoes = ttk.Scrollbar(frameTabelaOpcoes, orient="vertical", command=tabelaOpcoes.yview)
-    tabelaOpcoes.configure(yscrollcommand=scrollY_opcoes.set)
-    scrollY_vizu = ttk.Scrollbar(frameTabelaVisu, orient="vertical", command=tabelaVisu.yview)
-    tabelaVisu.configure(yscrollcommand=scrollY_vizu.set)
-    pbVizu = ttk.Progressbar(frameOpcoes, mode='determinate')
-    btVizu = tk.Button(frameOpcoes,text='Carregar Visualização',bg=cor["azul"], fg=cor["branco"])
-    btEnvia = tk.Button(frameOpcoes,text='Importar',bg=cor["azul"], fg=cor["branco"])
-    lbLogo = ttk.Label(frameCabecario, image=imgColiseu,background=cor["azul"])
-    lbRequisicoes = ttk.Label(frameCabecario, text="Requisições",background=cor["azul"],foreground=cor["branco"],font=("Arial", 24,"bold"))
-
-    btVizu.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-    btVizu.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-    pbVizu.grid(row=1, column=0, padx=10, pady=10, sticky='ew')
-    btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-    btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-    lbLogo.grid(row=0,column=2)
-    lbRequisicoes.grid(row=0,column=0)
-    frameOpcoes.grid(row=0, column=0, sticky='nsew', rowspan=2)
-    frameOpcoes.grid_rowconfigure(0, weight=1)
-    frameOpcoes.grid_columnconfigure(0, weight=1)
-    frameTabelaOpcoes.grid(row=0, column=0, padx=10, pady=10, sticky='nsew')
-    frameVisu.grid(row=2, column=0, sticky='nsew')
-    frameVisu.grid_rowconfigure(0, weight=1)
-    frameVisu.grid_columnconfigure(0, weight=1)
-    frameTabelaVisu.grid(row=0, column=0, padx=10, pady=10, sticky='nsew')
-    btVizu.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-
-    frameCabecario.pack(side="top", fill="x")
-    frameTabelas.pack(fill="both", expand=True, padx=10, pady=10)
-    scrollY_opcoes.pack(side="right", fill="y")
-    tabelaOpcoes.pack(fill="both", expand=True,pady=5,padx=2)
-    scrollY_vizu.pack(side="right", fill="y")
-    tabelaVisu.pack(fill="both", expand=True,pady=5,padx=2)
-
-    def executar(self):
-        self.root.mainloop()
+class ViewApp:
+    def __init__(self, root, controller):
+        self.root = root
+        self.controller = controller
+        
+    def retorna_tree_op(self):
+        return self.tree_opcoes    
+        
+    def load_options(self):
+        opcoes = self.controller.get_options()
+        print(opcoes)
 
 
+
+
+    def interface(self):
+        #Cores da Home da interface
+        cor = {"verde" : "#A7C957","azul" : "#1D3557","azulClaro" : "#98c1d9","branco" : "#F1FAEE","vermelho" : "#E63946", "cinza" : "#8D99AE"}
+        '''
+        ---IMAGENS---
+        '''
+        #Logo Coliseu
+        img_coliseu =PhotoImage(file="C:/COLISEU/REQUISICOES/assets/COLISEUsFundo.png")
+        img_coliseu = img_coliseu.subsample(2, 2)
+        '''
+        ---FRAMES---
+        '''
+        #frame com o cabeçario
+        frame_cabecario = tk.Frame(self.root,height=100,bg=cor["azul"],padx=10)
+        frame_cabecario.columnconfigure(0, weight=1)
+        frame_cabecario.columnconfigure(1, weight=4)
+        frame_cabecario.columnconfigure(2, weight=1)
+        frame_cabecario.rowconfigure(0, weight=1)
+        #frame com as trees vizu e opcoes
+        frame_trees = tk.Frame(self.root,bg=cor["vermelho"])
+        frame_trees.rowconfigure(0, weight=4)
+        frame_trees.rowconfigure(1, weight=2)
+        frame_trees.rowconfigure(2, weight=1)
+        frame_trees.columnconfigure(0, weight=1)
+        #frame com a tree de opções (a de cima)
+        frame_opcoes = tk.Frame(frame_trees,bg=cor["cinza"])
+        #frame utilizado para posicionar a tree de opções juntamente com seu scroll
+        frame_tree_opcoes = tk.Frame(frame_opcoes,bg=cor["azul"])
+        #frame com a tree de visualizar (a de baixo)
+        frame_vizu = tk.Frame(frame_trees,bg=cor["cinza"])
+        #frame utilizado para posicionar a tree de visualizar juntamente com seu scroll
+        frame_tree_vizu = tk.Frame(frame_vizu,bg=cor["azul"])
+        #configurações da tree de opções
+        '''
+        ---LABELS---
+        '''
+        lb_Logo = ttk.Label(frame_cabecario, image=img_coliseu,background=cor["azul"])
+        lb_requisicoes = ttk.Label(frame_cabecario, text="Requisições",background=cor["azul"],foreground=cor["branco"],font=("Arial", 24,"bold"))
+  
+        
+        '''
+        ---TREEVIEWS---
+        '''
+        columns_tree_opcoes = ("Message Id", "Size", "Data","Hora")
+        self.tree_opcoes = ttk.Treeview(frame_tree_opcoes, columns=columns_tree_opcoes, show='headings')
+        self.tree_opcoes.column("Message Id", anchor="center")
+        self.tree_opcoes.column("Size", anchor="center")
+        self.tree_opcoes.column("Data", anchor="center")
+        self.tree_opcoes.column("Hora", anchor="center")
+        self.tree_opcoes.heading("Message Id", text="Message Id")
+        self.tree_opcoes.heading("Size", text="Size")
+        self.tree_opcoes.heading("Data", text="Data")
+        self.tree_opcoes.heading("Hora", text="Hora")
+
+
+        #configurações da tree de vizualisar
+        tree_vizu = ttk.Treeview(frame_tree_vizu, columns=("codCliente","cliente","produto","referencia","quantidade"), show='headings')
+        tree_vizu.column("codCliente", anchor="center")
+        tree_vizu.column("cliente", anchor="center")
+        tree_vizu.column("produto", anchor="center")
+        tree_vizu.column("referencia", anchor="center")
+        tree_vizu.column("quantidade", anchor="center")
+        tree_vizu.heading("codCliente", text="Cód.Cliente")
+        tree_vizu.heading("cliente", text="Cliente")
+        tree_vizu.heading("produto", text="Produto")
+        tree_vizu.heading("referencia", text="Ref.")
+        tree_vizu.heading("quantidade", text="Uni.")
+
+        '''
+        ---TREEVIEWS_COOLOR_CONFIG_E_INSERÇÂO---
+        ---***MUDAR_PARA_FUNÇÂO_SEPARADA***---
+        ''' 
+        
+
+        '''
+        ---BUTTONS---
+        '''
+        btEnvia = tk.Button(frame_opcoes,text='Importar',bg=cor["azul"], fg=cor["branco"])
+        pbVizu = ttk.Progressbar(frame_opcoes, mode='determinate')
+        btVizu = tk.Button(frame_opcoes,command=None,text='Carregar Visualização',bg=cor["azul"], fg=cor["branco"])
+
+        '''
+        #################################################################
+        -----------------------------------------------------------------
+        ----------------POSICIONANDO_WIDGETS-----------------------------
+        -----------------------------------------------------------------
+        #################################################################
+        '''
+        lb_Logo.grid(row=0,column=2)
+        lb_requisicoes.grid(row=0,column=0)
+        frame_opcoes.grid(row=0, column=0, sticky='nsew', rowspan=2)
+        frame_opcoes.grid_rowconfigure(0, weight=1)
+        frame_opcoes.grid_columnconfigure(0, weight=1)
+        frame_tree_opcoes.grid(row=0, column=0, padx=10, pady=10, sticky='nsew')
+        frame_vizu.grid(row=2, column=0, sticky='nsew')
+        frame_vizu.grid_rowconfigure(0, weight=1)
+        frame_vizu.grid_columnconfigure(0, weight=1)
+        frame_tree_vizu.grid(row=0, column=0, padx=10, pady=10, sticky='nsew')
+        btVizu.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
+        frame_cabecario.pack(side="top", fill="x")
+        frame_trees.pack(fill="both", expand=True, padx=10, pady=10)
+        self.tree_opcoes.pack(fill="both", expand=True,pady=5,padx=2)
+        tree_vizu.pack(fill="both", expand=True,pady=5,padx=2)
+        
 
