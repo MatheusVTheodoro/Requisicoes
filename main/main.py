@@ -56,8 +56,8 @@ def opcoes():
     return {'MessageID':MessageId,'Data':Data,'Hora':Hora, 'Size' :Size}
 
 def trataPedescoTxt(link):
-    global tabela_vizu,root,pbVizu,banco,messageId_clicked
-    
+    global tabela_vizu,root,pbVizu,banco,messageId_clicked,importavel
+    importavel = True
     procedures=[]
     texto = htmlResponseText(link)
     texto = re.findall("98.............................................................",texto)
@@ -100,6 +100,7 @@ def trataPedescoTxt(link):
         
         if(produto==[]):
             produto='Produto não vinculado'
+            importavel = False
         else:
             produto=produto[0]
             produto=str(produto)
@@ -107,6 +108,7 @@ def trataPedescoTxt(link):
 
         if(cliente==[]):
             cliente='Codigo de cliente não vinculado'
+            importavel = False
         else:
             cliente=cliente[0]
             cliente=str(cliente)
@@ -142,7 +144,7 @@ def item_clicked(event):
         button_created2 = True
    
 def visualiza():
-    global button_created,btEnvia,btVizu,pbVizu,messageId_clicked
+    global button_created,btEnvia,btVizu,pbVizu,messageId_clicked,importavel
     btVizu.destroy()
     pbVizu = ttk.Progressbar(frame_opcoes, mode='determinate')
     pbVizu.grid(row=1, column=0, padx=10, pady=10, sticky='ew')
@@ -153,7 +155,7 @@ def visualiza():
     pedidos = trataPedescoTxt(linkView)
 
     def importar():
-        global banco
+        global banco,importavel
         con = firebirdsql.connect(
         host='localhost',
         database=banco,
@@ -191,17 +193,20 @@ def visualiza():
         btEnvia.destroy()
         root.update()
         
-        
+   
     
-
-    if button_created:
-        btEnvia.destroy()
-        btEnvia = tk.Button(frame_opcoes,command=importar,text='Importar',bg=cor["azul"], fg=cor["branco"])
-        btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
+    if importavel:
+        if button_created:
+            btEnvia.destroy()
+            btEnvia = tk.Button(frame_opcoes,command=importar,text='Importar',bg=cor["azul"], fg=cor["branco"])
+            btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
+        else:
+            btEnvia = tk.Button(frame_opcoes,command=importar,text='Importar',bg=cor["azul"], fg=cor["branco"])
+            btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
+            button_created = True
+    
     else:
-        btEnvia = tk.Button(frame_opcoes,command=importar,text='Importar',bg=cor["azul"], fg=cor["branco"])
-        btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-        button_created = True
+        print('erro')
 
 options=opcoes()
 
@@ -220,6 +225,7 @@ cor = {"verde" : "#A7C957","azul" : "#1D3557","azulClaro" : "#457B9D","branco" :
 button_created = True
 button_created2 = False
 pbVizu_created = False
+importavel = True
 
 root = tk.Tk()
 root.geometry("800x600")
