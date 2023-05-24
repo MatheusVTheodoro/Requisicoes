@@ -59,6 +59,8 @@ def trataPedescoTxt(link):
     global tabela_vizu,root,pbVizu,banco,messageId_clicked,importavel
     importavel = True
     procedures=[]
+    produtoVinc = []
+    clienteVinc = []
     texto = htmlResponseText(link)
     texto = re.findall("98.............................................................",texto)
     maximum=len(texto) 
@@ -74,6 +76,7 @@ def trataPedescoTxt(link):
     for index,value in enumerate(texto):
         tam = 8
         peca = value[0:0+tam]
+        clientedados=[]
         codCliente = value[tam:tam+6]
         tam=tam+6
         nPedido = value[tam:tam+6]
@@ -93,41 +96,57 @@ def trataPedescoTxt(link):
         linhaDoPedido = value[tam:tam+5]
         quantidade=int(quantidade)
 
-        query=(f"select NOME_FANTASIA from clientes where clientes.DOC_EX = '{codCliente}'")
-        cliente=select(con,query)
+        query=(f"select NOME,NOME_FANTASIA,cidade, uf from clientes JOIN regioes ON clientes.id_regiao = regioes.id_regiao where clientes.DOC_EX = '{codCliente}'")
+        listtupla=select(con,query)
         query=(f"select descricao from produtos where produtos.codigo_fab = '{peca}'")
         produto=select(con,query)
         
         if(produto==[]):
             produto='Produto não vinculado'
+            produtoVinc.append(peca)
             importavel = False
         else:
             produto=produto[0]
             produto=str(produto)
             produto = produto[2:-3]
 
-        if(cliente==[]):
-            cliente='Codigo de cliente não vinculado'
+        if(listtupla==[]):
+            nome = 'CODIGO DE CLIENTE NÃO VINCULADO'
+            nome_fantasia = 'CODIGO DE CLIENTE NÃO VINCULADO'
+            cidade = 'CODIGO DE CLIENTE NÃO VINCULADO'
+            uf = 'CODIGO DE CLIENTE NÃO VINCULADO'
             importavel = False
         else:
-            cliente=cliente[0]
-            cliente=str(cliente)
-            cliente = cliente[2:-3]
+            tupla=listtupla[0]
+            nome = tupla[0]
+            nome_fantasia = tupla[1]
+            cidade = tupla[2]
+            uf = tupla[3]
+
+
+
+
 
         procedure=(f"execute procedure GERAR_REQUISICAO('{codCliente}','{messageId_clicked}','{int(NPedidoGMSAP)}','{peca}',{quantidade});")
         procedures.append(procedure)
-        if index % 2 == 0 :
+        
+        
+        if (nome =='CODIGO DE CLIENTE NÃO VINCULADO')or(produto =='Produto não vinculado'):
+            fundo = "vermelho"
+        elif index % 2 == 0 :
             fundo = "branco"
         else:
-            fundo = "verde"
+            fundo="verde"
         
-        tabela_vizu.insert("", tk.END,values=(codCliente,cliente,produto,peca,quantidade),tags=(fundo))
+        
+        tabela_vizu.insert("", tk.END,values=(codCliente,nome,nome_fantasia,cidade,uf,produto,peca,quantidade),tags=(fundo))
         tabela_vizu.tag_configure("branco", background=cor["branco"])
+        tabela_vizu.tag_configure("vermelho", background=cor["vermelho"])
         pbVizu['value'] = index+1
         root.update()
     con.close()
     pbVizu.destroy()    
-    return {'procedures':procedures}
+    return {'procedures':procedures, 'produtoVinc':produtoVinc, 'clienteVinc':clienteVinc}
 
 def item_clicked(event):
     global button_created2,btVizu,btEnvia
@@ -206,7 +225,7 @@ def visualiza():
             button_created = True
     
     else:
-        print('erro')
+        print('error')
 
 options=opcoes()
 
@@ -312,14 +331,20 @@ tabela_opcoes.configure(yscrollcommand=scrollY_opcoes.set)
 tabela_opcoes.pack(fill="both", expand=True,pady=5,padx=2)
 
 #configurações da tabela de vizualisar
-tabela_vizu = ttk.Treeview(frame_tabela_vizu, columns=("codCliente","cliente","produto","referencia","quantidade"), show='headings')
+tabela_vizu = ttk.Treeview(frame_tabela_vizu, columns=("codCliente","nome","nome_fantasia","cidade","uf","produto","referencia","quantidade"), show='headings')
 tabela_vizu.column("codCliente", anchor="center")
-tabela_vizu.column("cliente", anchor="center")
+tabela_vizu.column("nome", anchor="center")
+tabela_vizu.column("nome_fantasia", anchor="center")
+tabela_vizu.column("cidade", anchor="center")
+tabela_vizu.column("uf", anchor="center")
 tabela_vizu.column("produto", anchor="center")
 tabela_vizu.column("referencia", anchor="center")
 tabela_vizu.column("quantidade", anchor="center")
 tabela_vizu.heading("codCliente", text="Cód.Cliente")
-tabela_vizu.heading("cliente", text="Cliente")
+tabela_vizu.heading("nome", text="Nome")
+tabela_vizu.heading("nome_fantasia", text="Fantasia")
+tabela_vizu.heading("cidade", text="Cidade")
+tabela_vizu.heading("uf", text="UF")
 tabela_vizu.heading("produto", text="Produto")
 tabela_vizu.heading("referencia", text="Ref.")
 tabela_vizu.heading("quantidade", text="Uni.")
