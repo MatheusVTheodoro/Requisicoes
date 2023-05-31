@@ -25,7 +25,7 @@ namespace eval ttk::theme::azure-light {
             -disabledfg     "#737373"
             -disabledbg     "#ffffff"
             -selectfg       "#ffffff"
-            -selectbg       "#007fff"
+            -selectbg       "#1D3557"
         }
 
         ttk::style layout TButton {

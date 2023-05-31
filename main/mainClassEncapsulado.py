@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import PhotoImage
-from tkinter import ttk
+#from tkinter import ttk
+import ttkbootstrap as ttk
 
 cor = {
     "verde": "#A7C957",
@@ -11,9 +12,10 @@ cor = {
     "cinza": "#8D99AE"
 }
 
-class Home(tk.Tk):
+class Home(ttk.Window):
     def __init__(self):
         super().__init__()
+        self.style.theme_use("newtheme")
         self.title("Requisições")
         self.geometry("800x600")
         self.config(bg=cor["branco"])
@@ -21,14 +23,16 @@ class Home(tk.Tk):
         self.state('zoomed')
         self.create_widgets()
         self.configure_layout()
+        
     
     def create_widgets(self):
-        self.frame_cabecario = tk.Frame(self, height= 100, bg=cor["azul"],padx=10)
+        self.frame_cabecario = ttk.Frame(self, height= 100, bootstyle="primary")
         self.frame_cabecario.columnconfigure(0, weight=1)
         self.frame_cabecario.columnconfigure(1, weight=4)
         self.frame_cabecario.columnconfigure(2, weight=1)
         self.frame_cabecario.rowconfigure(0, weight=1)
         
+
         self.frame_principal = tk.Frame(self,bg=cor["vermelho"])
         self.frame_principal.rowconfigure(0, weight=4)
         self.frame_principal.rowconfigure(1, weight=2)

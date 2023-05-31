@@ -8,6 +8,9 @@ from tkinter import messagebox
 
 
 root = tk.Tk()
+root.tk.call("source", "Azure/azure.tcl")
+root.tk.call("set_theme", "light")
+
 
 class Aplication():
     def __init__(self):
@@ -182,7 +185,7 @@ class Aplication():
         for X in range (0,len(self.options['Data'])):
             
             if X % 2 == 0 :
-                fundo = "branco"
+                fundo = "normal"
             else:
                 fundo = "normal"
             if  self.options['MessageID'][X] in self.lista_importados:
