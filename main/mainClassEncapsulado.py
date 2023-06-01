@@ -2,73 +2,155 @@ import tkinter as tk
 from tkinter import PhotoImage
 #from tkinter import ttk
 import ttkbootstrap as ttk
+import requests as req
+import re
+import firebirdsql
 
-cor = {
-    "verde": "#A7C957",
-    "azul": "#1D3557",
-    "azulClaro": "#457B9D",
-    "branco": "#ced4da",
-    "vermelho": "#E63946",
-    "cinza": "#8D99AE"
-}
+class Data:
+    def __init__(self):
+        self.banco = self.get_banco()
+        self.con = firebirdsql.connect(
+            host='localhost',
+            database=self.banco,
+            user='SYSDBA',
+            password='masterkey',
+            port=3050,
+            charset='WIN1252')
+        
+    def get_banco(self):
+        with open('C:/COLISEU/Requisicoes/banco.txt', 'r') as arquivo:
+            self.banco= arquivo.read()   
+        return self.banco     
+
+    def select(self,query):
+        cur = self.con.cursor()
+        cur.execute(query)
+        resultado = cur.fetchall()
+        cur.close()
+        return resultado
+
+    def execute(self,con,query):
+        cur = con.cursor()
+        cur.execute(query)
+        cur.close()
+
+    def htmlResponseText(self,link):
+        user='CampFacil'
+        senha='dsffjyxtf4x'
+        response = req.get(link, auth=(user,senha))
+        return(response.text)
+    
+    def treeOpcoesData(self):
+        html=self.htmlResponseText("https://messaging.covisint.com/invoke/HTTPConnector.Mailbox/get")
+        MessageId=[]
+        Data=[]
+        Hora=[]
+        Size=[]
+        
+        X = re.findall("&nbsp;[0-9]+&nbsp",html)
+        for v in X:
+            message = re.sub("&nbsp;","",v)
+            Size.append(re.sub("&nbsp","",message))
+
+        X = re.findall("<td><tt>&nbsp;........&nbsp;",html)
+        for v in X:
+            message = re.sub("<td><tt>&nbsp;","",v)
+            MessageId.append(re.sub("&nbsp;","",message))
+        
+        X = re.findall("<nobr>&nbsp;........",html)
+        for v in X:
+            dia = re.sub("<nobr>&nbsp;","",v)
+            Data.append(dia)
+        
+        X = re.findall("&nbsp;.....:..",html)
+        for v in X:
+            hora = re.sub("&nbsp;","",v)
+            Hora.append(hora)
+
+        return {'MessageID':MessageId,'Data':Data,'Hora':Hora, 'Size' :Size}
+
+    def get_lista_importados(self):
+        self.lista_importados = self.select("select pedido from requisicoes ")
+        self.lista_importados = [' '.join(map(str, tupla)) for tupla in self.lista_importados]
+        return self.lista_importados
 
 class Home(ttk.Window):
     def __init__(self):
         super().__init__()
-        self.style.theme_use("newtheme")
+        self.Data = Data()
+        self.banco = self.Data.get_banco()
+        self.options = self.Data.treeOpcoesData()
+        print (type(self.options))
+        self.lista_importados = self.Data.get_lista_importados()
+        self.style.theme_use("flatly")
         self.title("Requisições")
         self.geometry("800x600")
-        self.config(bg=cor["branco"])
         self.resizable(width=True, height=True)
         self.state('zoomed')
-        self.create_widgets()
-        self.configure_layout()
-        
+        self.home_create_widgets()
+        self.tree_opcoes_update()
+        self.home_configure_layout()
+        self.btVizu_created = False
+        self.btEnvia_created = False
+        self.importavel = True
+        self.menuBar_open = False     
     
-    def create_widgets(self):
+    def home_create_widgets(self):
         self.frame_cabecario = ttk.Frame(self, height= 100, bootstyle="primary")
         self.frame_cabecario.columnconfigure(0, weight=1)
-        self.frame_cabecario.columnconfigure(1, weight=4)
-        self.frame_cabecario.columnconfigure(2, weight=1)
+        self.frame_cabecario.columnconfigure(1, weight=8)
+        self.frame_cabecario.columnconfigure(2, weight=2)
+        self.frame_cabecario.columnconfigure(3, weight=1)
         self.frame_cabecario.rowconfigure(0, weight=1)
         
-
-        self.frame_principal = tk.Frame(self,bg=cor["vermelho"])
+        self.frame_principal = ttk.Frame(self)
         self.frame_principal.rowconfigure(0, weight=4)
         self.frame_principal.rowconfigure(1, weight=2)
         self.frame_principal.rowconfigure(2, weight=1)
         self.frame_principal.columnconfigure(0, weight=1)
 
-        self.frame_tree_opcoes = tk.Frame(self.frame_principal,bg=cor["cinza"])
+        
+        self.current_width = 0
+        self.target_width = 100
+        self.increment = 5
+
+        self.frame_tree_opcoes = ttk.Frame(self.frame_principal,bootstyle="light")
         self.frame_tree_opcoes.grid_rowconfigure(0, weight=1)
         self.frame_tree_opcoes.grid_columnconfigure(0, weight=1)
 
-        self.frame_treeScroll_opcoes = tk.Frame(self.frame_tree_opcoes,bg=cor["azul"])
-        
-        self.frame_tree_vizu = tk.Frame(self.frame_principal,bg=cor["cinza"])
+        self.frame_treeScroll_opcoes = ttk.Frame(self.frame_tree_opcoes,bootstyle="primary")
+        self.frame_lateral = ttk.Frame(self.frame_treeScroll_opcoes,bootstyle="primary")
+
+        self.frame_tree_vizu = ttk.Frame(self.frame_principal,bootstyle="light")
         self.frame_tree_vizu.grid_rowconfigure(0, weight=1)
         self.frame_tree_vizu.grid_columnconfigure(0, weight=1)
 
-        self.frame_treeScroll_vizu = tk.Frame(self.frame_tree_vizu,bg=cor["azul"])
+        self.frame_treeScroll_vizu = ttk.Frame(self.frame_tree_vizu,bootstyle="primary")
 
         self.img_logoColiseu =PhotoImage(file="C:/COLISEU/REQUISICOES/assets/COLISEUsFundo.png")
         self.img_logoColiseu = self.img_logoColiseu.subsample(2,2)
 
         self.lb_logoColiseu = ttk.Label(self.frame_cabecario,
-                                         image = self.img_logoColiseu,
-                                           background= cor["azul"])
+                                        image = self.img_logoColiseu,
+                                        bootstyle=("primary", 'inverse'))
 
         self.lb_requisicoes = ttk.Label(self.frame_cabecario,
                                         text ="Requisições",
-                                        background=cor["azul"],
-                                        foreground=cor["branco"],
+                                        bootstyle=("primary", 'inverse'),
                                         font=("Arial",24,"bold"))
 
-        self.btEnvia = tk.Button(self.frame_principal,text='Importar',bg=cor["azul"], fg=cor["branco"])
+        self.btEnvia = ttk.Button(self.frame_tree_opcoes,command=self.importar,text='Importar',bootstyle=("primary"))
 
-        self.pbVizu = ttk.Progressbar(self.frame_principal, mode='determinate')
+        self.bt_navbar = ttk.Button(self.frame_cabecario,command=self.menubar_expandir,width=10,text='>>>',bootstyle=("primary"))
 
-        self.btVizu = tk.Button(self.frame_principal,command=None,text='Carregar Visualização',bg=cor["azul"], fg=cor["branco"])
+        self.bt_navbar2 = ttk.Button(self.frame_lateral,command=self.menubar_expandir,width=10,text='Home',bootstyle=("primary"))
+        self.bt_navbar3 = ttk.Button(self.frame_lateral,command=self.menubar_expandir,width=10,text='Pedidos',bootstyle=("primary"))
+        self.bt_navbar4 = ttk.Button(self.frame_lateral,command=self.menubar_expandir,width=10,text='>>>',bootstyle=("primary"))
+        self.bt_navbar5 = ttk.Button(self.frame_lateral,command=self.menubar_expandir,width=10,text='>>>',bootstyle=("primary"))
+        self.bt_navbar6 = ttk.Button(self.frame_lateral,command=self.menubar_expandir,width=10,text='>>>',bootstyle=("primary"))
+        self.bt_navbar7 = ttk.Button(self.frame_lateral,command=self.menubar_expandir,width=10,text='Config',bootstyle=("primary"))
+
+        self.btVizu = ttk.Button(self.frame_tree_opcoes,command=self.visualiza,text='Carregar Visualização',bootstyle=("primary"))
 
         self.tree_opcoes = ttk.Treeview(self.frame_treeScroll_opcoes, columns=("Message Id","Size", "Data","Hora"), show='headings')
         self.tree_opcoes.column("Message Id", anchor="center")
@@ -80,7 +162,8 @@ class Home(ttk.Window):
         self.tree_opcoes.heading("Data", text="Data")
         self.tree_opcoes.heading("Hora", text="Hora")
         self.scrollY_opcoes = ttk.Scrollbar(self.frame_treeScroll_opcoes, orient="vertical", command=self.tree_opcoes.yview)
-        self.tree_opcoes.configure(yscrollcommand=self.scrollY_opcoes.set)     
+        self.tree_opcoes.configure(yscrollcommand=self.scrollY_opcoes.set)
+        self.tree_opcoes.tag_configure("verde", background="#A7C957")     
 
 
 
@@ -103,22 +186,181 @@ class Home(ttk.Window):
             self.tree_vizu.column(col[0], anchor="center", width=col[2])
             self.tree_vizu.heading(col[0], text=col[1])
         
-    def configure_layout(self):
-        self.frame_cabecario.pack(side="top", fill="x")
-        self.frame_principal.pack(fill="both", expand=True)
+    def home_configure_layout(self):
+        self.frame_cabecario.grid(row=0, column=0, columnspan=2, sticky="ew")
+        self.frame_principal.grid(row=1, column=1, sticky="nsew")
+
+        self.grid_rowconfigure(0, weight=0)
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=0)
+        self.grid_columnconfigure(1, weight=1)
+
+        self.bt_navbar.grid(row=0,column=0)
+
         self.frame_tree_opcoes.grid(row=0, column=0, sticky='nsew', rowspan=2)
-        self.frame_treeScroll_opcoes.grid(row=0, column=0, padx=10, pady=10, sticky='nsew')
+        self.frame_treeScroll_opcoes.grid(row=0, column=0, pady=10, sticky='nsew')
+        self.frame_lateral.pack(side=ttk.LEFT, fill=ttk.BOTH)
         self.frame_tree_vizu.grid(row=2, column=0, sticky='nsew')
-        self.frame_treeScroll_vizu.grid(row=0, column=0, padx=10, pady=10, sticky='nsew')
+        self.frame_treeScroll_vizu.grid(row=0, column=0, pady=10, sticky='nsew')
         self.scrollY_opcoes.pack(side="right", fill="y")
         self.scrollY_vizu.pack(side="right", fill="y")
-        self.tree_opcoes.pack(fill="both", expand=True,pady=5,padx=2)
-        self.tree_vizu.pack(fill="both", expand=True,pady=5,padx=2)
-        self.lb_requisicoes.grid(row=0,column=0)
+        self.tree_opcoes.pack(fill="both", expand=True,pady=10,padx=0)
+        self.tree_vizu.pack(fill="both", expand=True,pady=10,padx=0)
+        self.lb_requisicoes.grid(row=0,column=1)
         self.lb_logoColiseu.grid(row=0,column=2)
 
+    def menubar_expandir(self):
+        if self.current_width < self.target_width:
+            self.current_width += self.increment
+            self.frame_lateral.config(width=self.current_width)
+            self.after(10, self.menubar_expandir)
+        else:
+            self.bt_navbar2.grid(row=0, column=0)
+            self.bt_navbar3.grid(row=1, column=0)
+            self.bt_navbar4.grid(row=2, column=0)
+            self.bt_navbar5.grid(row=3, column=0)
+            self.bt_navbar6.grid(row=4, column=0)
+            self.bt_navbar7.grid(row=5, column=0)
+            self.menuBar_open = True
 
+    def item_clicked(self,event):
+        self.tree_vizu.delete(*self.tree_vizu.get_children())
 
+        if self.btEnvia_created:
+            self.btVizu.destroy()
+
+        if self.btVizu_created:
+            self.btVizu.destroy()
+            self.btVizu = ttk.Button(self.frame_tree_opcoes,command=self.visualiza,text='Carregar Visualização',bootstyle=("info"))
+            self.btVizu.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
+
+        else:
+            self.btVizu = ttk.Button(self.frame_tree_opcoes,command=self.visualiza,text='Carregar Visualização',bootstyle=("info"))
+            self.btVizu.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
+            self.btVizu_created = True
+              
+    def tree_opcoes_update(self):
+        self.lista_importados = self.Data.get_lista_importados()
+        for X in range (0,len(self.options['Data'])):
+            if  self.options['MessageID'][X] in self.lista_importados:
+                fundo = "verde"
+            else:
+                fundo ="normal"  
+            self.tree_opcoes.insert("", tk.END,values=(self.options['MessageID'][X],self.options['Size'][X],self.options['Data'][X],self.options['Hora'][X],"Confirmado"),tags=(fundo))
+        self.tree_opcoes.bind("<ButtonRelease-1>", self.item_clicked)
+
+    def visualiza(self):
+        self.btVizu.destroy()
+        self.tree_vizu.delete(*self.tree_vizu.get_children())
+        item = self.tree_opcoes.selection()[0]
+        self.messageId_clicked = self.tree_opcoes.item(item, "values")[0]
+        self.linkView=(f"https://messaging.covisint.com/invoke/HTTPConnector.Mailbox/get?action=msg_view&id={self.messageId_clicked}")
+        self.pedidos = self.consultarPedido(self.linkView)
+        
+        if self.importavel:
+            if self.btEnvia_created:
+                self.btEnvia.destroy()
+                self.btEnvia = ttk.Button(self.frame_tree_opcoes,command=self.importar,text='Importar',bootstyle=("info"))
+                self.btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
+            else:
+                self.btEnvia = ttk.Button(self.frame_tree_opcoes,command=self.importar,text='Importar',bootstyle=("info"))
+                self.btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
+                self.btEnvia_created = True    
+    
+    def importar(self):
+        con = firebirdsql.connect(
+            host='localhost',
+            database=self.banco,
+            user='SYSDBA',
+            password='masterkey',
+            port=3050,
+            charset='WIN1252')
+        con.begin()
+        for value in self.pedidos['procedures']:
+            self.Data.execute(con,value)    
+        con.commit()
+        con.close()
+        self.tree_opcoes.delete(*self.tree_opcoes.get_children())
+        self.tree_opcoes_update()
+        self.btEnvia.destroy()
+        self.update()
+
+    def consultarPedido(self,link):
+        self.importavel = True
+        procedures=[]
+        texto = self.Data.htmlResponseText(link)
+        texto = re.findall("98.............................................................",texto)
+        maximum=len(texto) 
+        
+
+        for index,value in enumerate(texto):
+            tam = 8
+            peca = value[0:0+tam]
+            clientedados=[]
+            codCliente = value[tam:tam+6]
+            tam=tam+6
+            nPedido = value[tam:tam+6]
+            tam=tam+6
+            quantidade = value[tam:tam+5]
+            tam=tam+5
+            datavalue = value[tam:tam+8]
+            tam=tam+8
+            codFornecedor = value[tam:tam+9]
+            tam=tam+9
+            tipoDSODSC = value[tam:tam+1]
+            tam = tam+1
+            NPedidoGMSAP = value[tam:tam+9]
+            tam=tam+9
+            hora = value[tam:tam+6]
+            tam=tam+6
+            linhaDoPedido = value[tam:tam+5]
+            quantidade=int(quantidade)
+
+            query=(f"select NOME,NOME_FANTASIA,cidade, uf from clientes JOIN regioes ON clientes.id_regiao = regioes.id_regiao where clientes.DOC_EX = '{codCliente}'")
+            listtupla=self.Data.select(query)
+            query=(f"select descricao from produtos where produtos.codigo_fab = '{peca}'")
+            produto=self.Data.select(query)
+            
+            if(self.messageId_clicked in self.lista_importados):
+                self.importavel = False
+            if(produto==[]):
+                produto='CÓDIGO DE FABRICA NÃO VINCULADO'
+                self.importavel = False
+            else:
+                produto=produto[0]
+                produto=str(produto)
+                produto = produto[2:-3]
+
+            if(listtupla==[]):
+                nome = 'CODIGO DE CLIENTE NÃO VINCULADO'
+                nome_fantasia = 'CODIGO DE CLIENTE NÃO VINCULADO'
+                cidade = 'CODIGO DE CLIENTE NÃO VINCULADO'
+                uf = 'CODIGO DE CLIENTE NÃO VINCULADO'
+                self.importavel = False
+            else:
+                tupla=listtupla[0]
+                nome = tupla[0]
+                nome_fantasia = tupla[1]
+                cidade = tupla[2]
+                uf = tupla[3]
+
+            procedure=(f"execute procedure GERAR_REQUISICAO('{codCliente}','{self.messageId_clicked}','{int(NPedidoGMSAP)}','{peca}',{quantidade});")
+            procedures.append(procedure)
+            
+            if (nome =='CODIGO DE CLIENTE NÃO VINCULADO')or(produto =='CÓDIGO DE FABRICA NÃO VINCULADO'):
+                fundo = "vermelho"
+            elif (index % 2 == 0) :
+                fundo = "branco"
+            else:
+                fundo="verde"
+            
+            self.tree_vizu.insert("", tk.END,values=(codCliente,nome,nome_fantasia,cidade,uf,produto,peca,quantidade),tags=(fundo))
+            self.tree_vizu.tag_configure("vermelho", background="#E63946")
+            
+            self.update()
+
+            
+        return {'procedures':procedures}
 if __name__ == "__main__":
     janela_home = Home()
     janela_home.mainloop()

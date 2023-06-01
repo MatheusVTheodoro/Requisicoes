@@ -8,8 +8,6 @@ from tkinter import messagebox
 
 
 root = tk.Tk()
-root.tk.call("source", "Azure/azure.tcl")
-root.tk.call("set_theme", "light")
 
 
 class Aplication():
