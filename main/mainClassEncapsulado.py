@@ -5,6 +5,7 @@ import ttkbootstrap as ttk
 import requests as req
 import re
 import firebirdsql
+from tkinter import messagebox
 
 class Data:
     def __init__(self):
@@ -83,18 +84,29 @@ class Home(ttk.Window):
         self.lista_importados = self.Data.get_lista_importados()
         self.style.theme_use("flatly")
         self.title("Requisições")
-        self.geometry("800x600")
-        self.resizable(width=True, height=True)
-        self.state('zoomed')
-        self.home_create_widgets()
-        self.tree_opcoes_update()
-        self.home_configure_layout()
+        #self.home_create_widgets()
+        #self.tree_opcoes_update()
+        #self.home_configure_layout()
+        self.usuarios = {
+            "1": "SILENUS",
+            "123": "usuario1",
+            "456": "usuario2",
+            "789": "usuario3"
+        }
+        self.login_screen()
         self.btVizu_created = False
         self.btEnvia_created = False
         self.importavel = True
         self.menuBar_open = False     
       
+    def home_screen(self):
+        self.home_create_widgets()
+        self.tree_opcoes_update()
+        self.home_configure_layout()
+
     def home_create_widgets(self):
+        self.geometry("1280x720")
+        self.resizable(width=True, height=True)
         self.frame_cabecario = ttk.Frame(self, height= 100, bootstyle="primary")
         self.frame_cabecario.columnconfigure(0, weight=1)
         self.frame_cabecario.columnconfigure(1, weight=8)
@@ -140,14 +152,14 @@ class Home(ttk.Window):
 
         self.btEnvia = ttk.Button(self.frame_tree_opcoes,command=self.importar,text='Importar',bootstyle=("primary"))
 
-        self.bt_navbar = ttk.Button(self.frame_cabecario,command=self.menubar_expandir,width=10,text='>>>',bootstyle=("primary"))
+        self.bt_navbar = ttk.Button(self.frame_cabecario,command=self.menubar_expandir,width=10,text='Opções',bootstyle=("info"))
 
-        self.bt_navbar2 = ttk.Button(self.frame_lateral,command=None,width=10,text='Home',bootstyle=("primary"))
-        self.bt_navbar3 = ttk.Button(self.frame_lateral,command=None,width=10,text='Pedidos',bootstyle=("primary"))
+        self.bt_navbar2 = ttk.Button(self.frame_lateral,command=self.home_screen,width=10,text='Home',bootstyle=("info"))
+        self.bt_navbar3 = ttk.Button(self.frame_lateral,command=None,width=10,text='Pedidos',bootstyle=("info"))
         self.bt_navbar4 = ttk.Button(self.frame_lateral,command=None,width=10,text='>>>',bootstyle=("primary"))
         self.bt_navbar5 = ttk.Button(self.frame_lateral,command=None,width=10,text='>>>',bootstyle=("primary"))
         self.bt_navbar6 = ttk.Button(self.frame_lateral,command=None,width=10,text='>>>',bootstyle=("primary"))
-        self.bt_navbar7 = ttk.Button(self.frame_lateral,command=None,width=10,text='Config',bootstyle=("primary"))
+        self.bt_navbar7 = ttk.Button(self.frame_lateral,command=self.login_screen,width=10,text='Logoff',bootstyle=("info"))
 
         self.btVizu = ttk.Button(self.frame_tree_opcoes,command=self.visualiza,text='Carregar Visualização',bootstyle=("primary"))
 
@@ -361,15 +373,12 @@ class Home(ttk.Window):
             
         return {'procedures':procedures}
 
-'''
-class Tela2(ttk.Window):
-    def __init__(self):
-        super().__init__()
-        self.telalogin()
-
-    def telalogin(self):
+    def login_screen(self):
+        for widget in self.winfo_children():
+            widget.destroy()
         self.config(bg="white")
-        largura_janela = 500  # Largura da janela em pixels
+        self.state('normal')
+        largura_janela = 420  # Largura da janela em pixels
         altura_janela = 300  # Altura da janela em pixels
         largura_tela = self.winfo_screenwidth()
         altura_tela = self.winfo_screenheight()
@@ -380,26 +389,26 @@ class Tela2(ttk.Window):
         self.title("Requisições")
         self.img_coliseu =PhotoImage(file="C:/COLISEU/REQUISICOES/assets/COLISEUsFundo.png")
         self.img_coliseu = self.img_coliseu.subsample(2, 2)
-        self.frame_login = tk.Frame(self,bg="white")
-        self.frame_login_campos = tk.Frame(self,bg="white",padx=10,pady=10)
-        self.frame_login_campos_azul = tk.Frame(self.frame_login_campos,bg="white",padx=10,pady=10)
-        self.lb_Logo = ttk.Label(self.frame_login, image=self.img_coliseu,background="white")
-        self.id_label = tk.Label(self.frame_login_campos_azul, text="ID:",background="white",foreground="white",font=("Arial", 12,"bold"))
-        self.id_entry = tk.Entry(self.frame_login_campos_azul)
-        
-        self.usuario_label = tk.Label(self.frame_login_campos_azul, text="Usuário:",background="white",foreground="white",font=("Arial", 12,"bold"))
-        self.usuario_entry = tk.Entry(self.frame_login_campos_azul, state='readonly',background="white",foreground="white")  
-        self.label_senha = tk.Label(self.frame_login_campos_azul, text="Senha:",background="white",foreground="white",font=("Arial", 12,"bold"))
-        self.senha = tk.Entry(self.frame_login_campos_azul, show="*")
-        self.botao_entrar = tk.Button(self.frame_login_campos_azul, text="Entrar")
-        #self.senha.bind("<Key>", self.verificar_tecla)
-        self.lb_requisi = tk.Label(self.frame_login,text="Requisições",background="white",foreground="white",font=("Arial", 24,"bold"))
+        self.frame_login = ttk.Frame(self,bootstyle="primary")
+        self.frame_login_campos = ttk.Frame(self,padding=(0,20),bootstyle=("secondary"))
+        self.frame_login_campos_azul = ttk.Frame(self.frame_login_campos,bootstyle=("primary"),padding=(0,0))
+        self.lb_Logo = ttk.Label(self.frame_login, image=self.img_coliseu, bootstyle=("primary","inverse"))
+        self.id_label = ttk.Label(self.frame_login_campos_azul, text="ID:",font=("Arial", 12,"bold"),bootstyle=("primary","inverse"))
+        self.id_entry = ttk.Entry(self.frame_login_campos_azul)
+        self.id_entry.bind("<Return>", self.preencher_usuario)
+        self.usuario_label = ttk.Label(self.frame_login_campos_azul, text="Usuário:",font=("Arial", 12,"bold"),bootstyle=("primary","inverse"))
+        self.usuario_entry = ttk.Entry(self.frame_login_campos_azul, state='readonly')  
+        self.label_senha = ttk.Label(self.frame_login_campos_azul, text="Senha:",font=("Arial", 12,"bold"),bootstyle=("primary","inverse"))
+        self.senha = ttk.Entry(self.frame_login_campos_azul, show="*")
+        self.botao_entrar = ttk.Button(self.frame_login_campos_azul, text="Entrar", command=self.fazer_login,bootstyle=("info"))
+        self.senha.bind("<Key>", self.verificar_tecla)
+        self.lb_requisi = ttk.Label(self.frame_login,text="Requisições",font=("Arial", 24,"bold"),bootstyle=("primary","inverse"))
 
         self.frame_login.pack(side="top", fill="x")
         self.frame_login_campos.pack(fill="both", expand=True)
         self.lb_requisi.grid(row=0,column=1,padx=5,pady=5)
         self.lb_Logo.grid(row=0,column=0,padx=5,pady=5)
-        self.frame_login_campos_azul.pack(fill="both", expand=True,padx=30)
+        self.frame_login_campos_azul.pack(fill="both", expand=True)
 
         self.frame_login_campos_azul.rowconfigure(0, weight=1)
         self.frame_login_campos_azul.rowconfigure(1, weight=1)
@@ -418,12 +427,38 @@ class Tela2(ttk.Window):
         self.label_senha.grid(row=3, column=0)
         self.senha.grid(row=3, column=1)
         self.botao_entrar.grid(row=4,column=1,pady=10)
-'''
-class Main_aplication:
+
+    def preencher_usuario(self,event=None):
+        # Função para preencher o campo "Usuário" com base no ID digitado
+        id_digitado = self.id_entry.get()
+
+        # Verificar se o ID está presente no dicionário
+        if id_digitado in self.usuarios:
+            self.usuario_entry.configure(state='normal')  # Habilitar o campo "Usuário" para escrita
+            self.usuario_entry.delete(0, ttk.END)  # Limpar o campo "Usuário"
+            self.usuario_entry.insert(0, self.usuarios[id_digitado])  # Preencher com o valor correspondente
+            self.usuario_entry.configure(state='readonly')  # Bloquear o campo "Usuário" para escrita novamente
+            self.senha.focus()  # Mover o foco para o campo "Senha"
+
+    def fazer_login(self):
+        senha_digitada = self.senha.get()
+        if senha_digitada == "62728292":
+            for widget in self.winfo_children():
+                widget.destroy()
+            self.home_screen()
+        
+        else:
+            messagebox.showerror("Login", "Senha incorreta!")
+    
+    def verificar_tecla(self,event):
+        if event.keycode == 13:
+            self.fazer_login()
+
+class Main_aplication():
     def __init__(self):
         self.Home = Home()
         self.Home.mainloop()
 
 if __name__ == "__main__":
     Aplication = Main_aplication()
-    
+ 
