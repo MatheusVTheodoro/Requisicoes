@@ -130,7 +130,7 @@ class ScreenGerar(ttk.Window):
         self.frame_tree_opcoes.grid(row=0, column=0, sticky='nsew', rowspan=2)
         self.frame_treeScroll_opcoes.grid(row=0, column=0, pady=10, sticky='nsew')
         self.frame_lateral.pack(side=ttk.LEFT, fill=ttk.BOTH)
-        self.frame_tree_vizu.grid(row=2, column=0, sticky='nsew')
+        self.frame_tree_vizu.grid(row=0, column=1, sticky='nsew')
         self.frame_treeScroll_vizu.grid(row=0, column=0, pady=10, sticky='nsew')
         self.scrollY_opcoes.pack(side="right", fill="y")
         self.scrollY_vizu.pack(side="right", fill="y")

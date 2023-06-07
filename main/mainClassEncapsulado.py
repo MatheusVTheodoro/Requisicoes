@@ -114,7 +114,7 @@ class Home(ttk.Window):
         self.frame_cabecario.columnconfigure(3, weight=1)
         self.frame_cabecario.rowconfigure(0, weight=1)
         
-        self.frame_principal = ttk.Frame(self)
+        self.frame_principal = ttk.Frame(self) #este frame é utilizado apenas para receber organizar outros 2
         self.frame_principal.rowconfigure(0, weight=4)
         self.frame_principal.rowconfigure(1, weight=2)
         self.frame_principal.rowconfigure(2, weight=1)
@@ -125,14 +125,14 @@ class Home(ttk.Window):
         self.target_width = 100
         self.increment = 5
 
-        self.frame_tree_opcoes = ttk.Frame(self.frame_principal,bootstyle="light")
+        self.frame_tree_opcoes = ttk.Frame(self.frame_principal,bootstyle="secondary")
         self.frame_tree_opcoes.grid_rowconfigure(0, weight=1)
         self.frame_tree_opcoes.grid_columnconfigure(0, weight=1)
 
         self.frame_treeScroll_opcoes = ttk.Frame(self.frame_tree_opcoes,bootstyle="primary")
         self.frame_lateral = ttk.Frame(self.frame_treeScroll_opcoes,bootstyle="primary")
 
-        self.frame_tree_vizu = ttk.Frame(self.frame_principal,bootstyle="light")
+        self.frame_tree_vizu = ttk.Frame(self.frame_principal,bootstyle="secondary")
         self.frame_tree_vizu.grid_rowconfigure(0, weight=1)
         self.frame_tree_vizu.grid_columnconfigure(0, weight=1)
 
