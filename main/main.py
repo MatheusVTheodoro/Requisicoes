@@ -1,321 +1,215 @@
+import tkinter as tk
+from tkinter import PhotoImage
+#from tkinter import ttk
+import ttkbootstrap as ttk
 import requests as req
 import re
 import firebirdsql
-import tkinter as tk
-from tkinter import ttk
-from tkinter import PhotoImage
 from tkinter import messagebox
+from data import Data
 
-
-root = tk.Tk()
-
-
-class Aplication():
+class Home(ttk.Window):
     def __init__(self):
-        self.cor = {"verde" : "#A7C957","azul" : "#1D3557","azulClaro" : "#457B9D","branco" : "#ced4da","vermelho" : "#E63946", "cinza" : "#8D99AE"}
-        with open('C:/COLISEU/Requisicoes/banco.txt', 'r') as arquivo:
-            self.banco= arquivo.read()
-        self.options = self.tabelaOpcoesData()
-        self.root = root
-        con = firebirdsql.connect(
-            host='localhost',
-            database=self.banco,
-            user='SYSDBA',
-            password='masterkey',
-            port=3050,
-            charset='WIN1252')
-        self.lista_importados = self.select(con,"select pedido from requisicoes ")
-        self.lista_importados = [' '.join(map(str, tupla)) for tupla in self.lista_importados]
-        self.button_created = True
-        self.button_created2 = False
-        self.pbVizu_created = False
-        self.importavel = True
+        super().__init__()
+        self.Data = Data()
+        self.banco = self.Data.get_banco()
+        self.options = self.Data.treeOpcoesData()
+        self.lista_importados = self.Data.get_lista_importados()
+        self.style.theme_use("flatly")
+        self.title("Requisições")
+        #self.home_create_widgets()
+        #self.tree_opcoes_update()
+        #self.home_configure_layout()
         self.usuarios = {
             "1": "SILENUS",
             "123": "usuario1",
             "456": "usuario2",
             "789": "usuario3"
         }
-        self.telalogin()
-        root.mainloop() 
-    
-    def telalogin(self):
-        for widget in self.root.winfo_children():
-            widget.destroy()
-        self.root.config(bg=self.cor["branco"])
-        largura_janela = 500  # Largura da janela em pixels
-        altura_janela = 300  # Altura da janela em pixels
-        largura_tela = self.root.winfo_screenwidth()
-        altura_tela = self.root.winfo_screenheight()
-        pos_x = (largura_tela - largura_janela) // 2
-        pos_y = (altura_tela - altura_janela) // 2
-        self.root.geometry(f"{largura_janela}x{altura_janela}+{pos_x}+{pos_y}")
-        self.root.resizable(width=False, height=False)
-        self.root.title("Requisições")
-        self.img_coliseu =PhotoImage(file="C:/COLISEU/REQUISICOES/assets/COLISEUsFundo.png")
-        self.img_coliseu = self.img_coliseu.subsample(2, 2)
-        self.frame_login = tk.Frame(self.root,bg=self.cor["azul"])
-        self.frame_login_campos = tk.Frame(self.root,bg=self.cor["branco"],padx=10,pady=10)
-        self.frame_login_campos_azul = tk.Frame(self.frame_login_campos,bg=self.cor["azul"],padx=10,pady=10)
-        self.lb_Logo = ttk.Label(self.frame_login, image=self.img_coliseu,background=self.cor["azul"])
-        self.id_label = tk.Label(self.frame_login_campos_azul, text="ID:",background=self.cor["azul"],foreground=self.cor["branco"],font=("Arial", 12,"bold"))
-        self.id_entry = tk.Entry(self.frame_login_campos_azul)
-        self.id_entry.bind("<Return>", self.preencher_usuario)
-        self.usuario_label = tk.Label(self.frame_login_campos_azul, text="Usuário:",background=self.cor["azul"],foreground=self.cor["branco"],font=("Arial", 12,"bold"))
-        self.usuario_entry = tk.Entry(self.frame_login_campos_azul, state='readonly',background=self.cor["azul"],foreground=self.cor["azul"])  
-        self.label_senha = tk.Label(self.frame_login_campos_azul, text="Senha:",background=self.cor["azul"],foreground=self.cor["branco"],font=("Arial", 12,"bold"))
-        self.senha = tk.Entry(self.frame_login_campos_azul, show="*")
-        self.botao_entrar = tk.Button(self.frame_login_campos_azul, text="Entrar", command=self.fazer_login)
-        self.senha.bind("<Key>", self.verificar_tecla)
-        self.lb_requisi = tk.Label(self.frame_login,text="Requisições",background=self.cor["azul"],foreground=self.cor["branco"],font=("Arial", 24,"bold"))
+        self.login_screen()
+        self.btVizu_created = False
+        self.btEnvia_created = False
+        self.importavel = True
+        self.menuBar_open = False     
+      
+    def home_screen(self):
+        self.home_create_widgets()
+        self.tree_opcoes_update()
+        self.home_configure_layout()
 
-        self.frame_login.pack(side="top", fill="x")
-        self.frame_login_campos.pack(fill="both", expand=True)
-        self.lb_requisi.grid(row=0,column=1,padx=5,pady=5)
-        self.lb_Logo.grid(row=0,column=0,padx=5,pady=5)
-        self.frame_login_campos_azul.pack(fill="both", expand=True,padx=30)
-
-        self.frame_login_campos_azul.rowconfigure(0, weight=1)
-        self.frame_login_campos_azul.rowconfigure(1, weight=1)
-        self.frame_login_campos_azul.rowconfigure(2, weight=1)
-        self.frame_login_campos_azul.rowconfigure(3, weight=1)
-        self.frame_login_campos_azul.rowconfigure(4, weight=1)
-        self.frame_login_campos_azul.columnconfigure(0, weight=5)
-        self.frame_login_campos_azul.columnconfigure(1, weight=1)
-        self.frame_login_campos_azul.columnconfigure(2, weight=4)
-        self.frame_login_campos_azul.columnconfigure(3, weight=1)
-
-        self.id_label.grid(row=1, column=0)
-        self.id_entry.grid(row=1, column=1)
-        self.usuario_label.grid(row=2, column=0)
-        self.usuario_entry.grid(row=2, column=1)
-        self.label_senha.grid(row=3, column=0)
-        self.senha.grid(row=3, column=1)
-        self.botao_entrar.grid(row=4,column=1,pady=10)
-
-    def preencher_usuario(self,event=None):
-        # Função para preencher o campo "Usuário" com base no ID digitado
-        id_digitado = self.id_entry.get()
-
-        # Verificar se o ID está presente no dicionário
-        if id_digitado in self.usuarios:
-            self.usuario_entry.configure(state='normal')  # Habilitar o campo "Usuário" para escrita
-            self.usuario_entry.delete(0, tk.END)  # Limpar o campo "Usuário"
-            self.usuario_entry.insert(0, self.usuarios[id_digitado])  # Preencher com o valor correspondente
-            self.usuario_entry.configure(state='readonly')  # Bloquear o campo "Usuário" para escrita novamente
-            self.senha.focus()  # Mover o foco para o campo "Senha"
-
-    def fazer_login(self):
-        senha_digitada = self.senha.get()
-        if senha_digitada == "62728292":
-            for widget in self.root.winfo_children():
-                widget.destroy()
-            self.telaInicial()
-        else:
-            messagebox.showerror("Login", "Senha incorreta!")
-    
-    def verificar_tecla(self,event):
-        if event.keycode == 13:
-            self.fazer_login()
-
-    def telaInicial(self):
-        for widget in self.root.winfo_children():
-            widget.destroy()
-        self.root.geometry("800x600")
-        self.root.config(bg=self.cor["branco"])
-        self.root.resizable(width=True, height=True)
-        self.root.state('zoomed')
-        self.root.title("Requisições")
-        self.img_coliseu =PhotoImage(file="C:/COLISEU/REQUISICOES/assets/COLISEUsFundo.png")
-        self.img_coliseu = self.img_coliseu.subsample(2, 2)
-        self.frame_cabecario = tk.Frame(root,height=100,bg=self.cor["azul"],padx=10)
-        self.frame_cabecario.pack(side="top", fill="x")
+    def home_create_widgets(self):
+        self.geometry("1280x720")
+        self.resizable(width=True, height=True)
+        self.frame_cabecario = ttk.Frame(self, height= 100, bootstyle="primary")
         self.frame_cabecario.columnconfigure(0, weight=1)
-        self.frame_cabecario.columnconfigure(1, weight=4)
-        self.frame_cabecario.columnconfigure(2, weight=1)
+        self.frame_cabecario.columnconfigure(1, weight=8)
+        self.frame_cabecario.columnconfigure(2, weight=2)
+        self.frame_cabecario.columnconfigure(3, weight=1)
         self.frame_cabecario.rowconfigure(0, weight=1)
-        self.lb_Logo = ttk.Label(self.frame_cabecario, image=self.img_coliseu,background=self.cor["azul"])
-        self.lb_Logo.grid(row=0,column=2)
-        self.lb_requisicoes = ttk.Label(self.frame_cabecario, text="Requisições",background=self.cor["azul"],foreground=self.cor["branco"],font=("Arial", 24,"bold"))
-        self.lb_requisicoes.grid(row=0,column=0)
-        self.btTela2 = tk.Button(self.frame_cabecario,text='Tela2',bg=self.cor["branco"], fg=self.cor["azul"],command=self.tela2)
-        self.btTela2.grid(row=0,column=1)
-        #frame com as tabelas vizu e opcoes
-        self.frame_tabelas = tk.Frame(root,bg=self.cor["vermelho"])
-        self.frame_tabelas.pack(fill="both", expand=True, padx=10, pady=10)
-        self.frame_tabelas.rowconfigure(0, weight=4)
-        self.frame_tabelas.rowconfigure(1, weight=2)
-        self.frame_tabelas.rowconfigure(2, weight=1)
-        self.frame_tabelas.columnconfigure(0, weight=1)
+        
+        self.frame_principal = ttk.Frame(self) #este frame é utilizado apenas para receber organizar outros 2
+        self.frame_principal.rowconfigure(0, weight=4)
+        self.frame_principal.rowconfigure(1, weight=2)
+        self.frame_principal.rowconfigure(2, weight=1)
+        self.frame_principal.columnconfigure(0, weight=1)
 
-        #frame com a tabela de opções (a de cima)
-        self.frame_opcoes = tk.Frame(self.frame_tabelas,bg=self.cor["cinza"])
-        self.frame_opcoes.grid(row=0, column=0, sticky='nsew', rowspan=2)
-        self.frame_opcoes.grid_rowconfigure(0, weight=1)
-        self.frame_opcoes.grid_columnconfigure(0, weight=1)
+        
+        self.current_width = 0
+        self.target_width = 100
+        self.increment = 5
 
-        #frame utilizado para posicionar a tabela de opções juntamente com seu scroll
-        self.frame_tabela_opcoes = tk.Frame(self.frame_opcoes,bg=self.cor["azul"])
-        self.frame_tabela_opcoes.grid(row=0, column=0, padx=10, pady=10, sticky='nsew')
+        self.frame_tree_opcoes = ttk.Frame(self.frame_principal,bootstyle="secondary")
+        self.frame_tree_opcoes.grid_rowconfigure(0, weight=1)
+        self.frame_tree_opcoes.grid_columnconfigure(0, weight=1)
 
-        #frame com a tabela de visualizar (a de baixo)
-        self.frame_vizu = tk.Frame(self.frame_tabelas,bg=self.cor["cinza"])
-        self.frame_vizu.grid(row=2, column=0, sticky='nsew')
-        self.frame_vizu.grid_rowconfigure(0, weight=1)
-        self.frame_vizu.grid_columnconfigure(0, weight=1)
+        self.frame_treeScroll_opcoes = ttk.Frame(self.frame_tree_opcoes,bootstyle="primary")
+        self.frame_lateral = ttk.Frame(self.frame_treeScroll_opcoes,bootstyle="primary")
 
-        #frame utilizado para posicionar a tabela de visualizar juntamente com seu scroll
-        self.frame_tabela_vizu = tk.Frame(self.frame_vizu,bg=self.cor["azul"])
-        self.frame_tabela_vizu.grid(row=0, column=0, padx=10, pady=10, sticky='nsew')
+        self.frame_tree_vizu = ttk.Frame(self.frame_principal,bootstyle="secondary")
+        self.frame_tree_vizu.grid_rowconfigure(0, weight=1)
+        self.frame_tree_vizu.grid_columnconfigure(0, weight=1)
 
-        #configurações da tabela de opções
-        self.tabela_opcoes = ttk.Treeview(self.frame_tabela_opcoes, columns=("Message Id","Size", "Data","Hora"), show='headings')
-        self.tabela_opcoes.column("Message Id", anchor="center")
-        self.tabela_opcoes.column("Size", anchor="center")
-        self.tabela_opcoes.column("Data", anchor="center")
-        self.tabela_opcoes.column("Hora", anchor="center")
-        self.tabela_opcoes.heading("Message Id", text="Message Id")
-        self.tabela_opcoes.heading("Size", text="Size")
-        self.tabela_opcoes.heading("Data", text="Data")
-        self.tabela_opcoes.heading("Hora", text="Hora")
+        self.frame_treeScroll_vizu = ttk.Frame(self.frame_tree_vizu,bootstyle="primary")
 
+        self.img_logoColiseu =PhotoImage(file="C:/COLISEU/REQUISICOES/assets/COLISEUsFundo.png")
+        self.img_logoColiseu = self.img_logoColiseu.subsample(2,2)
 
-        for X in range (0,len(self.options['Data'])):
-            
-            if X % 2 == 0 :
-                fundo = "normal"
-            else:
-                fundo = "normal"
-            if  self.options['MessageID'][X] in self.lista_importados:
-                fundo = "verde"  
-            self.tabela_opcoes.insert("", tk.END,values=(self.options['MessageID'][X],self.options['Size'][X],self.options['Data'][X],self.options['Hora'][X],"Confirmado"),tags=(fundo))
-        self.tabela_opcoes.tag_configure("branco", background=self.cor["branco"])
-        self.tabela_opcoes.tag_configure("verde", background=self.cor["verde"])
-        self.tabela_opcoes.bind("<ButtonRelease-1>", self.item_clicked)
-        self.scrollY_opcoes = ttk.Scrollbar(self.frame_tabela_opcoes, orient="vertical", command=self.tabela_opcoes.yview)
+        self.lb_logoColiseu = ttk.Label(self.frame_cabecario,
+                                        image = self.img_logoColiseu,
+                                        bootstyle=("primary", 'inverse'))
+
+        self.lb_requisicoes = ttk.Label(self.frame_cabecario,
+                                        text ="Requisições",
+                                        bootstyle=("primary", 'inverse'),
+                                        font=("Arial",24,"bold"))
+
+        self.btEnvia = ttk.Button(self.frame_tree_opcoes,command=self.importar,text='Importar',bootstyle=("primary"))
+
+        self.bt_navbar = ttk.Button(self.frame_cabecario,command=self.menubar_expandir,width=10,text='Opções',bootstyle=("info"))
+
+        self.bt_navbar2 = ttk.Button(self.frame_lateral,command=self.home_screen,width=10,text='Home',bootstyle=("info"))
+        self.bt_navbar3 = ttk.Button(self.frame_lateral,command=None,width=10,text='Pedidos',bootstyle=("info"))
+        self.bt_navbar4 = ttk.Button(self.frame_lateral,command=None,width=10,text='>>>',bootstyle=("primary"))
+        self.bt_navbar5 = ttk.Button(self.frame_lateral,command=None,width=10,text='>>>',bootstyle=("primary"))
+        self.bt_navbar6 = ttk.Button(self.frame_lateral,command=None,width=10,text='>>>',bootstyle=("primary"))
+        self.bt_navbar7 = ttk.Button(self.frame_lateral,command=self.login_screen,width=10,text='Logoff',bootstyle=("info"))
+
+        self.btVizu = ttk.Button(self.frame_tree_opcoes,command=self.visualiza,text='Carregar Visualização',bootstyle=("primary"))
+
+        self.tree_opcoes = ttk.Treeview(self.frame_treeScroll_opcoes, columns=("Message Id","Size", "Data","Hora"), show='headings')
+        self.tree_opcoes.column("Message Id", anchor="center")
+        self.tree_opcoes.column("Size", anchor="center")
+        self.tree_opcoes.column("Data", anchor="center")
+        self.tree_opcoes.column("Hora", anchor="center")
+        self.tree_opcoes.heading("Message Id", text="Message Id")
+        self.tree_opcoes.heading("Size", text="Size")
+        self.tree_opcoes.heading("Data", text="Data")
+        self.tree_opcoes.heading("Hora", text="Hora")
+        self.scrollY_opcoes = ttk.Scrollbar(self.frame_treeScroll_opcoes, orient="vertical", command=self.tree_opcoes.yview)
+        self.tree_opcoes.configure(yscrollcommand=self.scrollY_opcoes.set)
+        self.tree_opcoes.tag_configure("verde", background="#A7C957")     
+        
+        columns = [
+            ("codCliente", "Código", 1),
+            ("nome", "Nome", 200),
+            ("nome_fantasia", "Nome Fantasia", 100),
+            ("cidade", "Cidade", 100),
+            ("uf", "UF", 1),
+            ("produto", "Produto", 200),
+            ("referencia", "Código de Fab.", 1),
+            ("quantidade", "Unid.", 1)
+        ]
+
+        self.tree_vizu = ttk.Treeview(self.frame_treeScroll_vizu, columns=[col[0] for col in columns], show='headings')
+        self.scrollY_vizu = ttk.Scrollbar(self.frame_treeScroll_vizu, orient="vertical", command=self.tree_vizu.yview)
+        self.tree_vizu.configure(yscrollcommand=self.scrollY_vizu.set)
+
+        for col in columns:
+            self.tree_vizu.column(col[0], anchor="center", width=col[2])
+            self.tree_vizu.heading(col[0], text=col[1])
+        
+    def home_configure_layout(self):
+        self.frame_cabecario.grid(row=0, column=0, columnspan=2, sticky="ew")
+        self.frame_principal.grid(row=1, column=1, sticky="nsew")
+
+        self.grid_rowconfigure(0, weight=0)
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=0)
+        self.grid_columnconfigure(1, weight=1)
+
+        self.bt_navbar.grid(row=0,column=0)
+
+        self.frame_tree_opcoes.grid(row=0, column=0, sticky='nsew', rowspan=2)
+        self.frame_treeScroll_opcoes.grid(row=0, column=0, pady=10, sticky='nsew')
+        self.frame_lateral.pack(side=ttk.LEFT, fill=ttk.BOTH)
+        self.frame_tree_vizu.grid(row=2, column=0, sticky='nsew')
+        self.frame_treeScroll_vizu.grid(row=0, column=0, pady=10, sticky='nsew')
         self.scrollY_opcoes.pack(side="right", fill="y")
-        self.tabela_opcoes.configure(yscrollcommand=self.scrollY_opcoes.set)
-        self.tabela_opcoes.pack(fill="both", expand=True,pady=5,padx=2)
-
-        #configurações da tabela de vizualisar
-        self.tabela_vizu = ttk.Treeview(self.frame_tabela_vizu, columns=("codCliente","nome","nome_fantasia","cidade","uf","produto","referencia","quantidade"), show='headings')
-        self.tabela_vizu.column("codCliente", anchor="center",width=1)
-        self.tabela_vizu.column("nome", anchor="center",width=200)
-        self.tabela_vizu.column("nome_fantasia", anchor="center",width=100)
-        self.tabela_vizu.column("cidade", anchor="center",width=100)
-        self.tabela_vizu.column("uf", anchor="center",width=1)
-        self.tabela_vizu.column("produto", anchor="center",width=200)
-        self.tabela_vizu.column("referencia", anchor="center",width=1)
-        self.tabela_vizu.column("quantidade", anchor="center",width=1)
-        self.tabela_vizu.heading("codCliente", text="Código")
-        self.tabela_vizu.heading("nome", text="Nome")
-        self.tabela_vizu.heading("nome_fantasia", text="Nome Fantasia")
-        self.tabela_vizu.heading("cidade", text="Cidade")
-        self.tabela_vizu.heading("uf", text="UF")
-        self.tabela_vizu.heading("produto", text="Produto")
-        self.tabela_vizu.heading("referencia", text="Código de Fab.")
-        self.tabela_vizu.heading("quantidade", text="Unid.")
-        self.scrollY_vizu = ttk.Scrollbar(self.frame_tabela_vizu, orient="vertical", command=self.tabela_vizu.yview)
         self.scrollY_vizu.pack(side="right", fill="y")
-        self.tabela_vizu.configure(yscrollcommand=self.scrollY_vizu.set)
-        self.tabela_vizu.pack(fill="both", expand=True,pady=5,padx=2)
+        self.tree_opcoes.pack(fill="both", expand=True,pady=10,padx=0)
+        self.tree_vizu.pack(fill="both", expand=True,pady=10,padx=0)
+        self.lb_requisicoes.grid(row=0,column=1)
+        self.lb_logoColiseu.grid(row=0,column=2)
 
-        self.btEnvia = tk.Button(self.frame_opcoes,text='Importar',bg=self.cor["azul"], fg=self.cor["branco"])
-
-        self.pbVizu = ttk.Progressbar(self.frame_opcoes, mode='determinate')
-
-        self.btVizu = tk.Button(self.frame_opcoes,command=self.visualiza,text='Carregar Visualização',bg=self.cor["azul"], fg=self.cor["branco"])
-
-    def tela2(self):
-        for widget in self.root.winfo_children():
-            widget.destroy()
-        self.root.geometry("800x600")
-        self.root.config(bg=self.cor["branco"])
-        self.root.resizable(width=True, height=True)
-        self.root.title("Requisições")
-        self.img_coliseu =PhotoImage(file="C:/COLISEU/REQUISICOES/assets/COLISEUsFundo.png")
-        self.img_coliseu = self.img_coliseu.subsample(2, 2)
-        self.frame_cabecario = tk.Frame(root,height=100,bg=self.cor["azul"],padx=10)
-        self.frame_cabecario.pack(side="top", fill="x")
-        self.frame_cabecario.columnconfigure(0, weight=1)
-        self.frame_cabecario.columnconfigure(1, weight=4)
-        self.frame_cabecario.columnconfigure(2, weight=1)
-        self.frame_cabecario.rowconfigure(0, weight=1)
-        self.lb_Logo = ttk.Label(self.frame_cabecario, image=self.img_coliseu,background=self.cor["azul"])
-        self.lb_Logo.grid(row=0,column=2)
-        self.lb_requisicoes = ttk.Label(self.frame_cabecario, text="Requisições",background=self.cor["azul"],foreground=self.cor["branco"],font=("Arial", 24,"bold"))
-        self.lb_requisicoes.grid(row=0,column=0)
-        self.btTela2 = tk.Button(self.frame_cabecario,text='Home',bg=self.cor["branco"], fg=self.cor["azul"],command=self.telaInicial)
-        self.btTela2.grid(row=0,column=1)
-        
-
-    def select(self,con,query):
-        cur = con.cursor()
-        cur.execute(query)
-        resultado = cur.fetchall()
-        cur.close()
-        return resultado
-
-    def execute(self,con,query):
-        cur = con.cursor()
-        cur.execute(query)
-        cur.close()
-
-    def tabelaOpcoesData(self):
-        html=self.htmlResponseText("https://messaging.covisint.com/invoke/HTTPConnector.Mailbox/get")
-        MessageId=[]
-        Data=[]
-        Hora=[]
-        Size=[]
-        
-        X = re.findall("&nbsp;[0-9]+&nbsp",html)
-        for v in X:
-            message = re.sub("&nbsp;","",v)
-            Size.append(re.sub("&nbsp","",message))
-
-        X = re.findall("<td><tt>&nbsp;........&nbsp;",html)
-        for v in X:
-            message = re.sub("<td><tt>&nbsp;","",v)
-            MessageId.append(re.sub("&nbsp;","",message))
-        
-        X = re.findall("<nobr>&nbsp;........",html)
-        for v in X:
-            dia = re.sub("<nobr>&nbsp;","",v)
-            Data.append(dia)
-        
-        X = re.findall("&nbsp;.....:..",html)
-        for v in X:
-            hora = re.sub("&nbsp;","",v)
-            Hora.append(hora)
-
-        return {'MessageID':MessageId,'Data':Data,'Hora':Hora, 'Size' :Size}
-
-    def htmlResponseText(self,link):
-        user='CampFacil'
-        senha='dsffjyxtf4x'
-        response = req.get(link, auth=(user,senha))
-        return(response.text)
+    def menubar_expandir(self):
+        if self.current_width < self.target_width:
+            self.current_width += self.increment
+            self.frame_lateral.config(width=self.current_width)
+            self.after(10, self.menubar_expandir)
+        else:
+            self.bt_navbar2.grid(row=0, column=0)
+            self.bt_navbar3.grid(row=1, column=0)
+            self.bt_navbar4.grid(row=2, column=0)
+            self.bt_navbar5.grid(row=3, column=0)
+            self.bt_navbar6.grid(row=4, column=0)
+            self.bt_navbar7.grid(row=5, column=0)
+            self.menuBar_open = True
 
     def item_clicked(self,event):
-        self.tabela_vizu.delete(*self.tabela_vizu.get_children())
-        if self.button_created:
-            self.btEnvia.destroy()
-        if self.button_created2:
-            self.btVizu.destroy()
-            self.btVizu = tk.Button(self.frame_opcoes,command=self.visualiza,text='Carregar Visualização',bg=self.cor["azul"], fg=self.cor["branco"])
-            self.btVizu.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-        else:
-            self.btVizu = tk.Button(self.frame_opcoes,command=self.visualiza,text='Carregar Visualização',bg=self.cor["azul"], fg=self.cor["branco"])
-            self.btVizu.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-            self.button_created2 = True
+        self.tree_vizu.delete(*self.tree_vizu.get_children())
 
-    def consultarPedido(self,link):
-        self.importavel = True
-        procedures=[]
-        texto = self.htmlResponseText(link)
-        texto = re.findall("98.............................................................",texto)
-        maximum=len(texto) 
-        self.pbVizu['maximum'] = maximum
+        if self.btEnvia_created:
+            self.btVizu.destroy()
+
+        if self.btVizu_created:
+            self.btVizu.destroy()
+            self.btVizu = ttk.Button(self.frame_tree_opcoes,command=self.visualiza,text='Carregar Visualização',bootstyle=("info"))
+            self.btVizu.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
+
+        else:
+            self.btVizu = ttk.Button(self.frame_tree_opcoes,command=self.visualiza,text='Carregar Visualização',bootstyle=("info"))
+            self.btVizu.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
+            self.btVizu_created = True
+              
+    def tree_opcoes_update(self):
+        self.lista_importados = self.Data.get_lista_importados()
+        for X in range (0,len(self.options['Data'])):
+            if  self.options['MessageID'][X] in self.lista_importados:
+                fundo = "verde"
+            else:
+                fundo ="normal"  
+            self.tree_opcoes.insert("", tk.END,values=(self.options['MessageID'][X],self.options['Size'][X],self.options['Data'][X],self.options['Hora'][X],"Confirmado"),tags=(fundo))
+        self.tree_opcoes.bind("<ButtonRelease-1>", self.item_clicked)
+
+    def visualiza(self):
+        self.btVizu.destroy()
+        self.tree_vizu.delete(*self.tree_vizu.get_children())
+        item = self.tree_opcoes.selection()[0]
+        self.messageId_clicked = self.tree_opcoes.item(item, "values")[0]
+        self.linkView=(f"https://messaging.covisint.com/invoke/HTTPConnector.Mailbox/get?action=msg_view&id={self.messageId_clicked}")
+        self.pedidos = self.consultarPedido(self.linkView)
+        
+        if self.importavel:
+            if self.btEnvia_created:
+                self.btEnvia.destroy()
+                self.btEnvia = ttk.Button(self.frame_tree_opcoes,command=self.importar,text='Importar',bootstyle=("info"))
+                self.btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
+            else:
+                self.btEnvia = ttk.Button(self.frame_tree_opcoes,command=self.importar,text='Importar',bootstyle=("info"))
+                self.btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
+                self.btEnvia_created = True    
+    
+    def importar(self):
         con = firebirdsql.connect(
             host='localhost',
             database=self.banco,
@@ -323,6 +217,23 @@ class Aplication():
             password='masterkey',
             port=3050,
             charset='WIN1252')
+        con.begin()
+        for value in self.pedidos['procedures']:
+            self.Data.execute(con,value)    
+        con.commit()
+        con.close()
+        self.tree_opcoes.delete(*self.tree_opcoes.get_children())
+        self.tree_opcoes_update()
+        self.btEnvia.destroy()
+        self.update()
+
+    def consultarPedido(self,link):
+        self.importavel = True
+        procedures=[]
+        texto = self.Data.htmlResponseText(link)
+        texto = re.findall("98.............................................................",texto)
+        maximum=len(texto) 
+        
 
         for index,value in enumerate(texto):
             tam = 8
@@ -348,9 +259,9 @@ class Aplication():
             quantidade=int(quantidade)
 
             query=(f"select NOME,NOME_FANTASIA,cidade, uf from clientes JOIN regioes ON clientes.id_regiao = regioes.id_regiao where clientes.DOC_EX = '{codCliente}'")
-            listtupla=self.select(con,query)
+            listtupla=self.Data.select(query)
             query=(f"select descricao from produtos where produtos.codigo_fab = '{peca}'")
-            produto=self.select(con,query)
+            produto=self.Data.select(query)
             
             if(self.messageId_clicked in self.lista_importados):
                 self.importavel = False
@@ -385,74 +296,100 @@ class Aplication():
             else:
                 fundo="verde"
             
-            self.tabela_vizu.insert("", tk.END,values=(codCliente,nome,nome_fantasia,cidade,uf,produto,peca,quantidade),tags=(fundo))
-            self.tabela_vizu.tag_configure("branco", background=self.cor["branco"])
-            self.tabela_vizu.tag_configure("vermelho", background=self.cor["vermelho"])
-            self.pbVizu['value'] = index+1
-            root.update()
-        con.close()
-        self.pbVizu.destroy()    
+            self.tree_vizu.insert("", tk.END,values=(codCliente,nome,nome_fantasia,cidade,uf,produto,peca,quantidade),tags=(fundo))
+            self.tree_vizu.tag_configure("vermelho", background="#E63946")
+            
+            self.update()
+
+            
         return {'procedures':procedures}
 
-    def visualiza(self):
-        self.btVizu.destroy()
-        self.pbVizu = ttk.Progressbar(self.frame_opcoes, mode='determinate')
-        self.pbVizu.grid(row=1, column=0, padx=10, pady=10, sticky='ew')
-        self.tabela_vizu.delete(*self.tabela_vizu.get_children())
-        item = self.tabela_opcoes.selection()[0]
-        self.messageId_clicked = self.tabela_opcoes.item(item, "values")[0]
-        self.linkView=(f"https://messaging.covisint.com/invoke/HTTPConnector.Mailbox/get?action=msg_view&id={self.messageId_clicked}")
-        self.pedidos = self.consultarPedido(self.linkView)
-        
-        if self.importavel:
-            if self.button_created:
-                self.btEnvia.destroy()
-                self.btEnvia = tk.Button(self.frame_opcoes,command=self.importar,text='Importar',bg=self.cor["azul"], fg=self.cor["branco"])
-                self.btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-            else:
-                self.btEnvia = tk.Button(self.frame_opcoes,command=self.importar,text='Importar',bg=self.cor["azul"], fg=self.cor["branco"])
-                self.btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-                self.button_created = True
+    def login_screen(self):
+        for widget in self.winfo_children():
+            widget.destroy()
+        self.config(bg="white")
+        self.state('normal')
+        largura_janela = 420  # Largura da janela em pixels
+        altura_janela = 300  # Altura da janela em pixels
+        largura_tela = self.winfo_screenwidth()
+        altura_tela = self.winfo_screenheight()
+        pos_x = (largura_tela - largura_janela) // 2
+        pos_y = (altura_tela - altura_janela) // 2
+        self.geometry(f"{largura_janela}x{altura_janela}+{pos_x}+{pos_y}")
+        self.resizable(width=False, height=False)
+        self.title("Requisições")
+        self.img_coliseu =PhotoImage(file="C:/COLISEU/REQUISICOES/assets/COLISEUsFundo.png")
+        self.img_coliseu = self.img_coliseu.subsample(2, 2)
+        self.frame_login = ttk.Frame(self,bootstyle="primary")
+        self.frame_login_campos = ttk.Frame(self,padding=(0,20),bootstyle=("secondary"))
+        self.frame_login_campos_azul = ttk.Frame(self.frame_login_campos,bootstyle=("primary"),padding=(0,0))
+        self.lb_Logo = ttk.Label(self.frame_login, image=self.img_coliseu, bootstyle=("primary","inverse"))
+        self.id_label = ttk.Label(self.frame_login_campos_azul, text="ID:",font=("Arial", 12,"bold"),bootstyle=("primary","inverse"))
+        self.id_entry = ttk.Entry(self.frame_login_campos_azul)
+        self.id_entry.bind("<Return>", self.preencher_usuario)
+        self.usuario_label = ttk.Label(self.frame_login_campos_azul, text="Usuário:",font=("Arial", 12,"bold"),bootstyle=("primary","inverse"))
+        self.usuario_entry = ttk.Entry(self.frame_login_campos_azul, state='readonly')  
+        self.label_senha = ttk.Label(self.frame_login_campos_azul, text="Senha:",font=("Arial", 12,"bold"),bootstyle=("primary","inverse"))
+        self.senha = ttk.Entry(self.frame_login_campos_azul, show="*")
+        self.botao_entrar = ttk.Button(self.frame_login_campos_azul, text="Entrar", command=self.fazer_login,bootstyle=("info"))
+        self.senha.bind("<Key>", self.verificar_tecla)
+        self.lb_requisi = ttk.Label(self.frame_login,text="Requisições",font=("Arial", 24,"bold"),bootstyle=("primary","inverse"))
+
+        self.frame_login.pack(side="top", fill="x")
+        self.frame_login_campos.pack(fill="both", expand=True)
+        self.lb_requisi.grid(row=0,column=1,padx=5,pady=5)
+        self.lb_Logo.grid(row=0,column=0,padx=5,pady=5)
+        self.frame_login_campos_azul.pack(fill="both", expand=True)
+
+        self.frame_login_campos_azul.rowconfigure(0, weight=1)
+        self.frame_login_campos_azul.rowconfigure(1, weight=1)
+        self.frame_login_campos_azul.rowconfigure(2, weight=1)
+        self.frame_login_campos_azul.rowconfigure(3, weight=1)
+        self.frame_login_campos_azul.rowconfigure(4, weight=1)
+        self.frame_login_campos_azul.columnconfigure(0, weight=5)
+        self.frame_login_campos_azul.columnconfigure(1, weight=1)
+        self.frame_login_campos_azul.columnconfigure(2, weight=4)
+        self.frame_login_campos_azul.columnconfigure(3, weight=1)
+
+        self.id_label.grid(row=1, column=0)
+        self.id_entry.grid(row=1, column=1)
+        self.usuario_label.grid(row=2, column=0)
+        self.usuario_entry.grid(row=2, column=1)
+        self.label_senha.grid(row=3, column=0)
+        self.senha.grid(row=3, column=1)
+        self.botao_entrar.grid(row=4,column=1,pady=10)
+
+    def preencher_usuario(self,event=None):
+        # Função para preencher o campo "Usuário" com base no ID digitado
+        id_digitado = self.id_entry.get()
+
+        # Verificar se o ID está presente no dicionário
+        if id_digitado in self.usuarios:
+            self.usuario_entry.configure(state='normal')  # Habilitar o campo "Usuário" para escrita
+            self.usuario_entry.delete(0, ttk.END)  # Limpar o campo "Usuário"
+            self.usuario_entry.insert(0, self.usuarios[id_digitado])  # Preencher com o valor correspondente
+            self.usuario_entry.configure(state='readonly')  # Bloquear o campo "Usuário" para escrita novamente
+            self.senha.focus()  # Mover o foco para o campo "Senha"
+
+    def fazer_login(self):
+        senha_digitada = self.senha.get()
+        if senha_digitada == "62728292":
+            for widget in self.winfo_children():
+                widget.destroy()
+            self.home_screen()
         
         else:
-            print('error')
-
-    def importar(self):
-        con = firebirdsql.connect(
-            host='localhost',
-            database=self.banco,
-            user='SYSDBA',
-            password='masterkey',
-            port=3050,
-            charset='WIN1252')
-        con.begin()
-        for value in self.pedidos['procedures']:
-            self.execute(con,value)    
-        con.commit()
-        con.close()
-        self.tabela_opcoes.delete(*self.tabela_opcoes.get_children())
-        con = firebirdsql.connect(
-            host='localhost',
-            database=self.banco,
-            user='SYSDBA',
-            password='masterkey',
-            port=3050,
-            charset='WIN1252')
-        self.lista_importados = self.select(con,"select pedido from requisicoes ")
-        con.close()
-        self.lista_importados = [' '.join(map(str, tupla)) for tupla in self.lista_importados]
-        for X in range (0,len(self.options['Data'])):
+            messagebox.showerror("Login", "Senha incorreta!")
     
-            if X % 2 == 0 :
-                fundo = "branco"
-            else:
-                fundo = "normal"
-            if  self.options['MessageID'][X] in self.lista_importados:
-                fundo = "verde"  
-            self.tabela_opcoes.insert("", tk.END,values=(self.options['MessageID'][X],self.options['Size'][X],self.options['Data'][X],self.options['Hora'][X],"Confirmado"),tags=(fundo))
-        self.tabela_opcoes.tag_configure("branco", background=self.cor["branco"])
-        self.tabela_opcoes.tag_configure("verde", background=self.cor["verde"])
-        self.btEnvia.destroy()
-        self.root.update()
+    def verificar_tecla(self,event):
+        if event.keycode == 13:
+            self.fazer_login()
 
-Aplication()
+class Main_aplication():
+    def __init__(self):
+        self.Home = Home()
+        self.Home.mainloop()
+
+if __name__ == "__main__":
+    Aplication = Main_aplication()
+ 
