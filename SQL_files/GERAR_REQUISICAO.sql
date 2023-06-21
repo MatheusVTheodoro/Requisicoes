@@ -5,7 +5,8 @@ CREATE OR ALTER PROCEDURE GERAR_REQUISICAO (
     PEDIDO VARCHAR(18),
     NPEDIDOGMSAP VARCHAR(8),
     PECA VARCHAR(30),
-    QTD INTEGER NOT NULL
+    QTD INTEGER NOT NULL,
+    OBS blob sub_type 1 segment size 80 character set WIN1252
 ) AS
 DECLARE VARIABLE CD_REQ INTEGER;
 DECLARE VARIABLE DATA_HOJE DATE;
@@ -51,6 +52,7 @@ BEGIN
         NUMERO,
         ID_FUNCIONARIO,
         PEDIDO,
+        OBS,
         VALOR_REQUISICAO,
         ID_VEICULO,
         ID_DEPTO,
@@ -69,6 +71,7 @@ BEGIN
         NULL,
         1,
         :PEDIDO,
+        :OBS,
         :VALOR_REQ,
         NULL,
         1,

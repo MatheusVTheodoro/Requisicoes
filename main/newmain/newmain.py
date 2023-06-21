@@ -6,7 +6,7 @@ import requests as req
 import re
 import firebirdsql
 from tkinter import messagebox
-from data import Data
+from newdata import Data
 from tkinter import filedialog
 
 class Home(ttk.Window):
@@ -19,9 +19,6 @@ class Home(ttk.Window):
         self.lista_importados = self.Data.get_lista_importados()
         self.style.theme_use("flatly")
         self.title("Requisições")
-        #self.home_create_widgets()
-        #self.tree_opcoes_update()
-        #self.home_configure_layout()
         self.usuarios = {
             "1": "SILENUS",
             "123": "usuario1",
@@ -32,7 +29,8 @@ class Home(ttk.Window):
         self.btVizu_created = False
         self.btEnvia_created = False
         self.importavel = True
-        self.menuBar_open = False     
+        self.menuBar_open = False
+     
       
 
 
@@ -48,7 +46,7 @@ class Home(ttk.Window):
             '''
             pedido=self.pedidosNf[X]    
             self.tree_pedidos.insert("", tk.END,values=(pedido['nome'],pedido['nome_fantasia'],pedido['nf'],pedido['pedido'],pedido['chave'],pedido['valor'],pedido['cnpj']))
-
+            
     def tree_opcoes_update(self):
         self.lista_importados = self.Data.get_lista_importados()
         for X in range (0,len(self.options['Data'])):
@@ -78,9 +76,6 @@ class Home(ttk.Window):
         arquivo.close()
         
         print("Frase gravada no arquivo:", arquivo.name)
-
-
-
 
     def visualiza(self):
         self.btVizu.destroy()
@@ -130,7 +125,6 @@ class Home(ttk.Window):
         
 
         for index,value in enumerate(texto):
-            obs = value
             tam = 8
             peca = value[0:0+tam]
             clientedados=[]
@@ -181,7 +175,7 @@ class Home(ttk.Window):
                 cidade = tupla[2]
                 uf = tupla[3]
 
-            procedure=(f"execute procedure GERAR_REQUISICAO('{codCliente}','{self.messageId_clicked}','{int(NPedidoGMSAP)}','{peca}',{quantidade},'{obs}');")
+            procedure=(f"execute procedure GERAR_REQUISICAO('{codCliente}','{self.messageId_clicked}','{int(NPedidoGMSAP)}','{peca}',{quantidade});")
             procedures.append(procedure)
             
             if (nome =='CODIGO DE CLIENTE NÃO VINCULADO')or(produto =='CÓDIGO DE FABRICA NÃO VINCULADO'):
