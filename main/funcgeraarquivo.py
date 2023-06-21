@@ -1,19 +1,52 @@
 import tkinter as tk
 from tkinter import filedialog
-from data import Data
+import tkinter as tk
+from tkinter import PhotoImage
+import ttkbootstrap as ttk
+import requests as req
+import re
+import firebirdsql
+from tkinter import messagebox
+
+
+
+
+
+
+
+def get_banco():
+    with open('C:/COLISEU/Requisicoes/banco.txt', 'r') as arquivo:
+        banco= arquivo.read()
+    return banco
+
+def select(query):
+    banco = get_banco()
+    con = firebirdsql.connect(
+            host='localhost',
+            database=banco,
+            user='SYSDBA',
+            password='masterkey',
+            port=3050,
+            charset='WIN1252')
+        
+
+    cur = con.cursor()
+    cur.execute(query)
+    resultado = cur.fetchall()
+    cur.close()
+    return resultado
+
+
 
 def salvar_arquivo():
-    # Abrir a janela de diálogo para seleção do local de salvamento
     arquivo = filedialog.asksaveasfile(defaultextension=".txt")
     
     if arquivo is None:
-        # Nenhum arquivo selecionado
         return
     
-    # Obter o texto a ser salvo
-    frase = "Esta é uma frase de exemplo."
-    
-    # Escrever a frase no arquivo
+    frase = """HEADERNFFORN20230209101828.DAT                                                                                                     
+    98553852L57001PREVMB00000471000190350667119012023C018474319000030000000439728000065960000030781000030781000000000        00010     
+"""
     arquivo.write(frase)
     arquivo.close()
     
@@ -21,15 +54,68 @@ def salvar_arquivo():
 
 
 def get_pedidos_nfe():
-    Data = Data()
     query=("""select clientes.nome,clientes.nome_fantasia,pedidos.nota_fiscal,pedidos.pedido,pedidos.chave_nfe,pedidos.valor_pedido
-from pedidos
-join clientes on pedidos.id_cliente = clientes.id_cliente
-where pedidos.id_requisicao is not null and (pedidos.nota_fiscal != 0 )""")
+    from pedidos
+    join clientes on pedidos.id_cliente = clientes.id_cliente
+    where pedidos.id_requisicao is not null and (pedidos.nota_fiscal != 0 )""")
     
-    listtupla=Data.select(query)
+    listtupla=select(query)
+    listPedidos=[]
+    for i in range (0,len(listtupla)):
+        tupla=listtupla[i]
+        nome = tupla[0]
+        nome_fantasia = tupla[1]
+        pedido = tupla[2]
+        nf = tupla[3]
+        chave = tupla[4]
+        valor = tupla[5]
+        listPedidos.append({'nome':nome,
+                                'nome_fantasia':nome_fantasia,
+                                'pedido':pedido,
+                                'nf' :nf,
+                                'chave' :chave,
+                                'valor' :valor})
 
-    print(listtupla)
+    return listPedidos
+
+    def treeOpcoesData():
+        MessageId=[]
+        Data=[]
+        Hora=[]
+        Size=[]
+        
+        X = re.findall("&nbsp;[0-9]+&nbsp",html)
+        for v in X:
+            message = re.sub("&nbsp;","",v)
+            Size.append(re.sub("&nbsp","",message))
+
+        X = re.findall("<td><tt>&nbsp;........&nbsp;",html)
+        for v in X:
+            message = re.sub("<td><tt>&nbsp;","",v)
+            MessageId.append(re.sub("&nbsp;","",message))
+        
+        X = re.findall("<nobr>&nbsp;........",html)
+        for v in X:
+            dia = re.sub("<nobr>&nbsp;","",v)
+            Data.append(dia)
+        
+        X = re.findall("&nbsp;.....:..",html)
+        for v in X:
+            hora = re.sub("&nbsp;","",v)
+            Hora.append(hora)
+
+        return {'MessageID':MessageId,'Data':Data,'Hora':Hora, 'Size' :Size}
+
+
+
+
+
+
+
+
+
+
+
 
 
 janela = tk.Tk()

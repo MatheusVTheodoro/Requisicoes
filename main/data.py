@@ -70,6 +70,33 @@ class Data:
 
         return {'MessageID':MessageId,'Data':Data,'Hora':Hora, 'Size' :Size}
 
+    def pedidosNfeData(self):
+        query=("""select clientes.nome,clientes.nome_fantasia,pedidos.nota_fiscal,pedidos.pedido,pedidos.chave_nfe,pedidos.valor_pedido,clientes.cpf_cnpj
+        from pedidos
+        join clientes on pedidos.id_cliente = clientes.id_cliente
+        where pedidos.id_requisicao is not null and (pedidos.nota_fiscal != 0 )""")
+        
+        listtupla=self.select(query)
+        listPedidos=[]
+        for i in range (0,len(listtupla)):
+            tupla=listtupla[i]
+            nome = tupla[0]
+            nome_fantasia = tupla[1]
+            pedido = tupla[2]
+            nf = tupla[3]
+            chave = tupla[4]
+            valor = tupla[5]
+            cnpj = tupla[6]
+            listPedidos.append({'nome':nome,
+                                    'nome_fantasia':nome_fantasia,
+                                    'pedido':pedido,
+                                    'nf' :nf,
+                                    'chave' :chave,
+                                    'valor' :valor,
+                                    'cnpj' :cnpj})
+
+        return listPedidos
+
     def get_lista_importados(self):
         self.lista_importados = self.select("select pedido from requisicoes ")
         self.lista_importados = [' '.join(map(str, tupla)) for tupla in self.lista_importados]
