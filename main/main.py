@@ -207,7 +207,10 @@ class Home(ttk.Window):
             else:
                 self.btEnvia = ttk.Button(self.frame_tree_opcoes,command=self.importar,text='Importar',bootstyle=("info"))
                 self.btEnvia.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
-                self.btEnvia_created = True    
+                self.btEnvia_created = True 
+        else:
+            self.btEnvia.destroy()
+            self.btEnvia_created = False   
     
     def importar(self):
         con = firebirdsql.connect(
