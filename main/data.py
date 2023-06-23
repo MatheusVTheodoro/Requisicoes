@@ -71,10 +71,12 @@ class Data:
         return {'MessageID':MessageId,'Data':Data,'Hora':Hora, 'Size' :Size}
 
     def pedidosNfeData(self):
-        query=("""select clientes.nome,clientes.nome_fantasia,pedidos.nota_fiscal,pedidos.pedido,pedidos.chave_nfe,pedidos.valor_pedido,clientes.cpf_cnpj
-        from pedidos
+        query=("""select clientes.nome,clientes.nome_fantasia,pedidos.nota_fiscal,pedidos.pedido,pedidos.chave_nfe,pedidos.valor_pedido,clientes.cpf_cnpj,pedidos.id_requisicao
+        from pedidos 
         join clientes on pedidos.id_cliente = clientes.id_cliente
-        where pedidos.id_requisicao is not null and (pedidos.nota_fiscal != 0 )""")
+        where pedidos.id_requisicao is not null
+        and (pedidos.nota_fiscal != 0 )
+        and (pedidos.id_mobile is null);""")
         
         listtupla=self.select(query)
         listPedidos=[]
@@ -82,18 +84,20 @@ class Data:
             tupla=listtupla[i]
             nome = tupla[0]
             nome_fantasia = tupla[1]
-            pedido = tupla[2]
-            nf = tupla[3]
+            nf = tupla[2]
+            pedido = tupla[3]
             chave = tupla[4]
             valor = tupla[5]
             cnpj = tupla[6]
+            id_req = tupla[7]
             listPedidos.append({'nome':nome,
                                     'nome_fantasia':nome_fantasia,
                                     'pedido':pedido,
                                     'nf' :nf,
                                     'chave' :chave,
                                     'valor' :valor,
-                                    'cnpj' :cnpj})
+                                    'cnpj' :cnpj,
+                                    'id_requisicao' :id_req})
 
         return listPedidos
 

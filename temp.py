@@ -1,21 +1,25 @@
-import tkinter as tk
+from tkinter import filedialog
+import os
 
-root = tk.Tk()
+# Definir o nome fixo do arquivo
+nome_arquivo = "meu_arquivo.dat"
 
-# Frame principal
-frame_principal = tk.Frame(root)
-frame_principal.grid(sticky='nsew')
+# Abrir a caixa de diálogo para selecionar um diretório
+diretorio = filedialog.askdirectory()
 
-# Frame 1
-frame1 = tk.Frame(frame_principal, bg='red')
-frame1.grid(row=0, column=0, sticky='nsew')
+# Verificar se um diretório foi selecionado
+if diretorio:
+    # Construir o caminho completo do arquivo
+    caminho_completo = os.path.join(diretorio, nome_arquivo)
+    print("Caminho completo do arquivo:", caminho_completo)
 
-# Frame 2
-frame2 = tk.Frame(frame_principal, bg='blue')
-frame2.grid(row=1, column=0, sticky='nsew')
+    # Aqui você pode adicionar o código para gerar o conteúdo do arquivo
 
-# Define o tamanho do Frame principal
-frame_principal.grid_rowconfigure(0, weight=1)
-frame_principal.grid_columnconfigure(0, weight=1)
+    # Exemplo: Escrever conteúdo no arquivo
+    conteudo = "Este é o conteúdo do arquivo que será salvo."
+    with open(caminho_completo, "w") as arquivo:
+        arquivo.write(conteudo)
 
-root.mainloop()
+    print("Arquivo salvo com sucesso!")
+else:
+    print("Nenhum diretório selecionado.")

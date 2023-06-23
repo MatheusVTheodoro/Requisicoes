@@ -8,6 +8,9 @@ import firebirdsql
 from tkinter import messagebox
 from data import Data
 from tkinter import filedialog
+import re
+from datetime import datetime
+import os
 
 class Home(ttk.Window):
     def __init__(self):
@@ -28,7 +31,7 @@ class Home(ttk.Window):
             "456": "usuario2",
             "789": "usuario3"
         }
-        self.login_screen()
+        self.pedidos_screen()
         self.btVizu_created = False
         self.btEnvia_created = False
         self.importavel = True
@@ -65,22 +68,155 @@ class Home(ttk.Window):
         nf = self.tree_pedidos.item(item, "values")[2]
         valor = self.tree_pedidos.item(item, "values")[5]
         cnpj = self.tree_pedidos.item(item, "values")[6]
-        self.tree_adicionados.insert("", tk.END,values=(pedido,nf,valor,cnpj))
-
+        nfs = self.capturar_valores(self.tree_adicionados,1)
+        if nf in (nfs):
+            messagebox.showerror("error", "PEDIDO JÁ INSERIDO")
+        else:
+            self.tree_adicionados.insert("", tk.END,values=(pedido,nf,valor,cnpj))
     def gerar_arquivo(self):
-        arquivo = filedialog.asksaveasfile(defaultextension=".txt")
-        
-        if arquivo is None:
-            return
-        
-        frase = """HEADERNFFORN20230411114705.DAT                                                                                                     98553852A57001DD010300000601900190350667103032023C018531291000020000000299746000044962000020983000020983000000000        00010     """
-        arquivo.write(frase)
-        arquivo.close()
-        
-        print("Frase gravada no arquivo:", arquivo.name)
+        diretorio = filedialog.askdirectory()
 
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        arquivo_estoque =  "ESTQFO"+timestamp+".DAT"
+        arquivo_nf = "NFFORN"+timestamp+".DAT"
 
+        #oque sera escrito:
+        arqEstq = "HEADERESTQFO"+timestamp+".DAT                                                        "
+        arqNF="HEADERNFFORN"+timestamp+".DAT                                                                                                     "
 
+        nfs = self.capturar_valores(self.tree_adicionados,1)
+        linhas =[]
+        
+        for values in nfs:
+            pedido =self.Data.select(f"""SELECT pedidos.obs, pedidos.valor_pedido, pedidos.valor_ipi, pedidos.valor_icms, pedidos.nota_fiscal, nota_fiscal.data_emissao
+                                            FROM pedidos
+                                            JOIN nota_fiscal ON pedidos.nota_fiscal = nota_fiscal.nota_fiscal
+                                            WHERE pedidos.nota_fiscal = {values};""")
+            linhas.append(pedido)
+
+        for values in linhas:
+            t = re.compile(r'[A-Z0-9]{63}')
+            values = values[0]
+            valor_pedido = float(values[1])
+            valor_ipi = float(values[2])
+            valor_icms = float(values[3])
+            nota_fiscal = int(values[4])
+            data_emissao = str(values[5])
+            data_emissao =data_emissao.replace("-", "")
+            ano = data_emissao[:4]
+            mes = data_emissao[4:6]
+            dia = data_emissao[6:]
+            data_emissao = dia+mes+ano
+            largura = 13
+            valor_pedido = "{:0>{largura}}".format("{:.2f}".format(valor_pedido).replace(".", ""), largura=largura)
+            largura = 9
+            valor_ipi = "{:0>{largura}}".format("{:.2f}".format(valor_ipi).replace(".", ""), largura=largura)
+            valor_icms = "{:0>{largura}}".format("{:.2f}".format(valor_icms).replace(".", ""), largura=largura)
+            nota_fiscal= "{:0>{largura}}".format(nota_fiscal, largura=largura)
+            values = str(values)
+            txt = t.findall(values)
+            txt = txt[0]
+            txt = re.sub("a","",txt) #resultado disso:98553852M88001DD16340000417052023903506671C01862778115515300010
+            tam = 8
+            peca = txt[0:0+tam]
+            arqEstq = "\n".join([arqEstq,peca])
+            arqNF = "\n".join([arqNF,peca])
+            codCliente = txt[tam:tam+6]
+            arqEstq = arqEstq+codCliente
+            arqNF = arqNF+codCliente
+            tam=tam+6
+            nPedido = txt[tam:tam+6]
+            arqEstq = arqEstq+nPedido
+            arqNF = arqNF+nPedido
+            #numero nf
+            arqNF = arqNF+nota_fiscal
+            #serienf
+            arqNF = arqNF+"001"
+            tam=tam+6
+            quantidade = txt[tam:tam+5]
+            arqEstq = arqEstq+quantidade
+            tam=tam+5
+            datavalue = txt[tam:tam+8]
+            arqEstq = arqEstq+"16032023"
+            tam=tam+8
+            codFornecedor = txt[tam:tam+9]
+            arqEstq = arqEstq+codFornecedor
+            #cod fornecedor
+            arqNF = arqNF+codFornecedor
+            #datanf
+            arqNF = arqNF+data_emissao
+            tam=tam+9
+            tipoDSODSC = txt[tam:tam+1]
+            #tipo
+            arqNF =arqNF+tipoDSODSC
+            arqEstq = arqEstq+tipoDSODSC
+
+            tam = tam+1
+            NPedidoGMSAP = txt[tam:tam+9]
+            arqNF = arqNF+NPedidoGMSAP
+            arqNF = arqNF+quantidade
+            #valor,ipi,icms,icmss,espaço em branco, contrato
+            arqNF = arqNF+valor_pedido+valor_ipi+valor_icms+valor_icms+"000000000"+"        "
+            
+
+            arqEstq = arqEstq+NPedidoGMSAP
+            arqEstq = arqEstq+"0000064"
+            arqEstq = arqEstq+"00040"
+            tam=tam+9
+            hora = txt[tam:tam+6]
+            tam=tam+6
+            linhaDoPedido = txt[tam:tam+5]
+            arqEstq = arqEstq+linhaDoPedido
+            arqNF = arqNF+linhaDoPedido+"     "
+            arqEstq = arqEstq+"                 "
+               
+        if diretorio:
+            caminho_completo = os.path.join(diretorio, arquivo_estoque)
+            with open(caminho_completo, "w") as arquivo:
+                arquivo.write(arqEstq)
+            with open(caminho_completo, "r") as arquivo:
+                linhas = arquivo.readlines()
+                total_linhas = len(linhas)+1
+            with open(caminho_completo, "a") as arquivo:
+                arquivo.write(f"\nTRAILLER{total_linhas:05d}                                                                         ")
+            caminho_completo = os.path.join(diretorio, arquivo_nf)
+            with open(caminho_completo, "w") as arquivo:
+                arquivo.write(arqNF)
+            with open(caminho_completo, "r") as arquivo:
+                linhas = arquivo.readlines()
+                total_linhas = len(linhas)+1
+            with open(caminho_completo, "a") as arquivo:
+                arquivo.write(f"\nTRAILLER{total_linhas:05d}                                                                                                                      ")
+        
+        con = firebirdsql.connect(
+            host='localhost',
+            database=self.banco,
+            user='SYSDBA',
+            password='masterkey',
+            port=3050,
+            charset='WIN1252')
+        con.begin()
+        for values in nfs:
+            query =f"update pedidos set ID_MOBILE = 1 where pedidos.nota_fiscal = {values};"
+            
+            self.Data.execute(con,query)
+        con.commit()
+        con.close()
+        
+        self.pedidos_screen()
+        messagebox.showinfo("Arquivos gerados!", f"ARQUIVOS:\n{arquivo_estoque}\n{arquivo_nf}\nESTÃO DISPONÍVEIS NO DIRETÓRIO ESCOLHIDO.")
+        
+    def capturar_valores(self,treeview, coluna):
+        valores = []
+        ids_itens = treeview.get_children()
+
+        for item_id in ids_itens:
+            valores_coluna = treeview.item(item_id, option='values')
+            
+            if valores_coluna and len(valores_coluna) > coluna:
+                valores.append(valores_coluna[coluna])
+
+        return valores
 
     def visualiza(self):
         self.btVizu.destroy()
