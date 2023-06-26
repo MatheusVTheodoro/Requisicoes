@@ -22,7 +22,7 @@ class Home(ttk.Window):
         self.lista_importados = self.Data.get_lista_importados()
         self.style.theme_use("flatly")
         self.title("Requisições")
-        self.iconbitmap('C:/Users/MATHEUS-COLISEU/Downloads/logo.ico')
+        self.iconbitmap('C:/COLISEU/REQUISICOES/assets/logo.ico')
         #self.home_create_widgets()
         #self.tree_opcoes_update()
         #self.home_configure_layout()
