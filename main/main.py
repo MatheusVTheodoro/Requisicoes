@@ -22,6 +22,7 @@ class Home(ttk.Window):
         self.lista_importados = self.Data.get_lista_importados()
         self.style.theme_use("flatly")
         self.title("Requisições")
+        self.iconbitmap('C:/Users/MATHEUS-COLISEU/Downloads/logo.ico')
         #self.home_create_widgets()
         #self.tree_opcoes_update()
         #self.home_configure_layout()
@@ -73,6 +74,7 @@ class Home(ttk.Window):
             messagebox.showerror("error", "PEDIDO JÁ INSERIDO")
         else:
             self.tree_adicionados.insert("", tk.END,values=(pedido,nf,valor,cnpj))
+
     def gerar_arquivo(self):
         diretorio = filedialog.askdirectory()
 
@@ -137,7 +139,7 @@ class Home(ttk.Window):
             arqEstq = arqEstq+quantidade
             tam=tam+5
             datavalue = txt[tam:tam+8]
-            arqEstq = arqEstq+"16032023"
+            arqEstq = arqEstq+data_emissao
             tam=tam+8
             codFornecedor = txt[tam:tam+9]
             arqEstq = arqEstq+codFornecedor
@@ -400,7 +402,13 @@ class Home(ttk.Window):
         self.pedidos_configure_layout()
 
     def pedidos_create_widgets(self):
-        self.geometry("1280x720")
+        largura_janela = 1280  # Largura da janela em pixels
+        altura_janela = 720  # Altura da janela em pixels
+        largura_tela = self.winfo_screenwidth()
+        altura_tela = self.winfo_screenheight()
+        pos_x = (largura_tela - largura_janela) // 2
+        pos_y = (altura_tela - altura_janela) // 2
+        self.geometry(f"{largura_janela}x{altura_janela}+{pos_x}+{pos_y}")
         self.resizable(width=True, height=True)
         self.frame_cabecario = ttk.Frame(self, height= 100, bootstyle="primary")
         self.frame_cabecario.columnconfigure(0, weight=1)
@@ -478,7 +486,7 @@ class Home(ttk.Window):
 
         self.bt_navbar2 = ttk.Button(self.frame_lateral,command=self.home_screen,width=10,text='Importar',bootstyle=("info"))
         self.bt_navbar3 = ttk.Button(self.frame_lateral,command=self.pedidos_screen,width=10,text='Gerar',bootstyle=("info"))
-        self.bt_navbar7 = ttk.Button(self.frame_lateral,command=self.login_screen,width=10,text='Logoff',bootstyle=("info"))
+        #self.bt_navbar7 = ttk.Button(self.frame_lateral,command=self.login_screen,width=10,text='Logoff',bootstyle=("info"))
 
     def pedidos_configure_layout(self):
         self.frame_cabecario.grid(row=0, column=0, columnspan=2, sticky="ew")
@@ -507,7 +515,13 @@ class Home(ttk.Window):
         self.home_configure_layout()
 
     def home_create_widgets(self):
-        self.geometry("1280x720")
+        largura_janela = 1280  # Largura da janela em pixels
+        altura_janela = 720  # Altura da janela em pixels
+        largura_tela = self.winfo_screenwidth()
+        altura_tela = self.winfo_screenheight()
+        pos_x = (largura_tela - largura_janela) // 2
+        pos_y = (altura_tela - altura_janela) // 2
+        self.geometry(f"{largura_janela}x{altura_janela}+{pos_x}+{pos_y}")
         self.resizable(width=True, height=True)
         self.frame_cabecario = ttk.Frame(self, height= 100, bootstyle="primary")
         self.frame_cabecario.columnconfigure(0, weight=1)
@@ -558,7 +572,7 @@ class Home(ttk.Window):
 
         self.bt_navbar2 = ttk.Button(self.frame_lateral,command=self.home_screen,width=10,text='Importar',bootstyle=("info"))
         self.bt_navbar3 = ttk.Button(self.frame_lateral,command=self.pedidos_screen,width=10,text='Gerar',bootstyle=("info"))
-        self.bt_navbar7 = ttk.Button(self.frame_lateral,command=self.login_screen,width=10,text='Logoff',bootstyle=("info"))
+        #self.bt_navbar7 = ttk.Button(self.frame_lateral,command=self.login_screen,width=10,text='Logoff',bootstyle=("info"))
 
         self.btVizu = ttk.Button(self.frame_tree_opcoes,command=self.visualiza,text='Carregar Visualização',bootstyle=("primary"))
 
@@ -629,7 +643,7 @@ class Home(ttk.Window):
         else:
             self.bt_navbar2.grid(row=0, column=0,padx=2,pady=5)
             self.bt_navbar3.grid(row=1, column=0,padx=2,pady=5)
-            self.bt_navbar7.grid(row=5, column=0,padx=2,pady=50)
+            #self.bt_navbar7.grid(row=5, column=0,padx=2,pady=50)
             self.menuBar_open = True
     
     def preencher_usuario(self,event=None):
