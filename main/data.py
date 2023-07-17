@@ -19,7 +19,7 @@ class Data:
             charset='WIN1252')
         
     def get_banco(self):
-        with open('C:/COLISEU/Requisicoes/banco.txt', 'r') as arquivo:
+        with open('C:/COLISEU/Requisicoes/banco.DLL', 'r') as arquivo:
             self.banco= arquivo.read()   
         return self.banco     
 
