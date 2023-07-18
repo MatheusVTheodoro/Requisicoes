@@ -94,15 +94,18 @@ def process_data():
                 linhas =[]
                 
                 for values in nfs:
-                    pedido =self.Data.select(f"""SELECT pedidos.obs, pedidos.valor_pedido, pedidos.valor_ipi, pedidos.valor_icms, pedidos.nota_fiscal, nota_fiscal.data_emissao
+                    pedido =self.Data.select(f"""SELECT pedidos.id_requisicao, pedidos.valor_pedido, pedidos.valor_ipi, pedidos.valor_icms, pedidos.nota_fiscal, nota_fiscal.data_emissao
                                                     FROM pedidos
                                                     JOIN nota_fiscal ON pedidos.nota_fiscal = nota_fiscal.nota_fiscal
                                                     WHERE pedidos.nota_fiscal = {values};""")
                     linhas.append(pedido)
 
                 for values in linhas:
-                    t = re.compile(r'[A-Z0-9]{63}')
                     values = values[0]
+                    t = re.compile(r'[A-Z0-9]{63}')
+                    id_req = values[0]
+                    obs = self.Data.select(f"""SELECT obs FROM requisicoes WHERE requisicoes.id_requisicao = {id_req};""")
+                    obs = str(obs[0])
                     valor_pedido = float(values[1])
                     valor_ipi = float(values[2])
                     valor_icms = float(values[3])
@@ -119,8 +122,8 @@ def process_data():
                     valor_ipi = "{:0>{largura}}".format("{:.2f}".format(valor_ipi).replace(".", ""), largura=largura)
                     valor_icms = "{:0>{largura}}".format("{:.2f}".format(valor_icms).replace(".", ""), largura=largura)
                     nota_fiscal= "{:0>{largura}}".format(nota_fiscal, largura=largura)
-                    values = str(values)
-                    txt = t.findall(values)
+                    obs = str(obs)
+                    txt = t.findall(obs)
                     txt = txt[0]
                     txt = re.sub("a","",txt) #resultado disso:98553852M88001DD16340000417052023903506671C01862778115515300010
                     tam = 8
@@ -272,7 +275,6 @@ def process_data():
                 
 
                 for index,value in enumerate(texto):
-                    obs = value
                     tam = 8
                     peca = value[0:0+tam]
                     clientedados=[]
@@ -289,13 +291,14 @@ def process_data():
                     tipoDSODSC = value[tam:tam+1]
                     tam = tam+1
                     NPedidoGMSAP = value[tam:tam+9]
+                    obs = (f"PEDIDO GM DSC {nPedido}")
                     tam=tam+9
                     hora = value[tam:tam+6]
                     tam=tam+6
                     linhaDoPedido = value[tam:tam+5]
                     quantidade=int(quantidade)
 
-                    query=(f"select NOME,NOME_FANTASIA,cidade, uf from clientes JOIN regioes ON clientes.id_regiao = regioes.id_regiao where clientes.DOC_EX = '{codCliente}'")
+                    query=(f"select NOME,NOME_FANTASIA,cidade, uf, cpf_cnpj from clientes JOIN regioes ON clientes.id_regiao = regioes.id_regiao where clientes.DOC_EX = '{codCliente}'")
                     listtupla=self.Data.select(query)
                     query=(f"select descricao from produtos where produtos.codigo_fab = '{peca}'")
                     produto=self.Data.select(query)
@@ -322,6 +325,7 @@ def process_data():
                         nome_fantasia = tupla[1]
                         cidade = tupla[2]
                         uf = tupla[3]
+                        CNPJ = tupla[4]
 
                     procedure=(f"execute procedure GERAR_REQUISICAO('{codCliente}','{self.messageId_clicked}','{int(NPedidoGMSAP)}','{peca}',{quantidade},'{obs}');")
                     procedures.append(procedure)
@@ -333,7 +337,7 @@ def process_data():
                     else:
                         fundo="verde"
                     
-                    self.tree_vizu.insert("", tk.END,values=(codCliente,nome,nome_fantasia,cidade,uf,produto,peca,quantidade),tags=(fundo))
+                    self.tree_vizu.insert("", tk.END,values=(codCliente,nome,nome_fantasia,CNPJ,cidade,uf,produto,peca,quantidade),tags=(fundo))
                     self.tree_vizu.tag_configure("vermelho", background="#E63946")
                     
                     self.update()
@@ -597,6 +601,7 @@ def process_data():
                     ("codCliente", "Código", 1),
                     ("nome", "Nome", 200),
                     ("nome_fantasia", "Nome Fantasia", 100),
+                    ("CNPJ", "CNPJ", 100),
                     ("cidade", "Cidade", 100),
                     ("uf", "UF", 1),
                     ("produto", "Produto", 200),
@@ -694,20 +699,18 @@ def process_data():
 
             '''@@@@@@@@@@@@@@@@@@@@@@@@@@@''' 
 
-
-
         class Main_aplication():
             def __init__(self):
                 self.Home = Home()
                 self.Home.mainloop()
-
-        if __name__ == "__main__":
-            Aplication = Main_aplication()
+        
+        Main_aplication()
  
     except Exception as e:
         excepthook(type(e), e, e.__traceback__)
 
-
+if __name__ == "__main__":
+    process_data()
 
 
 
