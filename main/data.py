@@ -36,8 +36,6 @@ class Data:
         cur.close()
 
     def htmlResponseText(self,link):
-        user='CampFacil'
-        senha='dsffjyxtf4x'
         response = req.get(link, auth=(user,senha))
         return(response.text)
     
